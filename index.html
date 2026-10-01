@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>St James Physics Lab — Cyclist Forces</title>
+<style>
+:root{--blue:#176fe8;--red:#e65032;--purple:#743db5;--ink:#172033;--green:#27753b}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;font-family:Arial,Helvetica,sans-serif;background:#f5f7fb;color:var(--ink)}
+.app{height:100dvh;max-width:1200px;margin:auto;display:grid;grid-template-rows:1fr auto;background:#fff}
+.scene{position:relative;min-height:0;overflow:hidden;background:linear-gradient(#bfe8ff 0 56%,#b8d889 56% 73%,#555d67 73% 100%)}
+.hills{position:absolute;left:-4%;right:-4%;top:42%;height:20%;background:#75ad6a;border-radius:50% 50% 0 0/75% 75% 0 0;opacity:.65}
+.roadline{position:absolute;left:0;right:0;bottom:8%;height:7px;background:repeating-linear-gradient(90deg,#fff 0 60px,transparent 60px 116px)}
+.world{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.obj{position:absolute;will-change:left}
+.tree{bottom:25%;width:70px;height:140px}.tree .trunk{position:absolute;left:29px;bottom:0;width:14px;height:62px;background:#755139;border-radius:5px}.tree .crown{position:absolute;left:0;top:0;width:68px;height:86px;background:#3d8a48;border-radius:52% 46% 49% 43%}
+.bush{bottom:23%;width:94px;height:50px;background:#448d47;border-radius:55% 50% 20% 20%}.small{bottom:23%;width:58px;height:34px;background:#5a9b51;border-radius:55% 50% 20% 20%}
+
+/* branding */
+.brand{position:absolute;z-index:15;right:2%;top:auto;bottom:13%;display:flex;align-items:center;gap:7px;background:#ffffffd9;border:1px solid #cad3df;border-radius:12px;padding:5px 9px;font-size:12px;font-weight:900;letter-spacing:.2px}
+.brand svg{width:30px;height:30px}
+
+/* power */
+.power{position:absolute;z-index:14;left:1.2%;top:24%;width:88px;background:#fffffff0;border:2px solid #c8d1de;border-radius:15px;text-align:center;padding:8px 6px}
+.powerTitle{font-size:12px;font-weight:900;line-height:1.05}.powerValue{font-size:20px;font-weight:900;margin-top:5px}
+.power input{appearance:none;-webkit-appearance:none;width:150px;height:44px;margin:58px -31px 53px;transform:rotate(-90deg);background:transparent;touch-action:none}
+.power input::-webkit-slider-runnable-track{height:9px;border-radius:8px;background:#cbd5e2}.power input::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#173f73;border:3px solid white;margin-top:-10px;box-shadow:0 0 0 1px #8390a2}
+.power input::-moz-range-track{height:9px;border-radius:8px;background:#cbd5e2}.power input::-moz-range-thumb{width:27px;height:27px;border-radius:50%;background:#173f73;border:3px solid white}
+
+/* force display */
+.forces{position:absolute;z-index:12;left:50%;top:3%;transform:translateX(-50%);width:min(900px,92%);height:155px}
+.label{position:absolute;top:0;font-size:clamp(14px,1.9vw,23px);font-weight:900;white-space:nowrap}.driveLabel{left:2%;color:var(--blue)}.resistLabel{right:2%;color:var(--red)}
+.fArrow{position:absolute;top:48px;height:14px;border-radius:8px;max-width:39%}.driveArrow{left:2%;background:var(--blue)}.resistArrow{right:2%;background:var(--red)}
+.fArrow:after{content:"";position:absolute;top:50%;transform:translateY(-50%);border-top:16px solid transparent;border-bottom:16px solid transparent}.driveArrow:after{right:-22px;border-left:24px solid var(--blue)}.resistArrow:after{left:-22px;border-right:24px solid var(--red)}
+.fArrow.zero{width:0!important;background:transparent}.fArrow.zero:after{display:none}
+.result{position:absolute;z-index:13;left:50%;top:93px;transform:translateX(-50%);width:74%;text-align:center;color:var(--purple);font-size:clamp(14px,1.8vw,22px);font-weight:900}
+.rArrow{position:absolute;top:32px;height:10px;background:var(--purple);border-radius:6px}.rArrow.right{left:50%}.rArrow.left{right:50%}.rArrow:after{content:"";position:absolute;top:50%;transform:translateY(-50%);border-top:12px solid transparent;border-bottom:12px solid transparent}.rArrow.right:after{right:-17px;border-left:19px solid var(--purple)}.rArrow.left:after{left:-17px;border-right:19px solid var(--purple)}
+
+/* cyclist */
+.bike{position:absolute;z-index:8;left:48%;bottom:13%;transform:translateX(-50%);width:min(355px,37vw)}
+.constant{position:absolute;z-index:11;left:48%;bottom:54%;transform:translateX(-50%);background:#fff;border:3px solid var(--green);border-radius:12px;padding:7px 18px;color:#216334;font-weight:900;font-size:clamp(15px,1.8vw,22px);white-space:nowrap}
+.paused{position:absolute;z-index:16;left:50%;top:44%;transform:translate(-50%,-50%);background:#172033e8;color:#fff;border-radius:13px;padding:10px 22px;font-size:22px;font-weight:900;letter-spacing:1px}
+
+/* meter */
+.meter{position:absolute;z-index:10;right:2%;bottom:24%;width:clamp(160px,19vw,225px);background:#fffffff3;border:3px solid #c7d0dc;border-radius:18px;padding:8px;text-align:center}.meterTitle{font-size:14px;font-weight:900}.gauge{width:100%;display:block}.digital{font-size:clamp(18px,2.4vw,28px);font-weight:900;margin-top:-8px}.ms{font-size:13px;color:#5e6877;font-weight:700}
+
+/* buttons */
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px;background:#f4f6f9;border-top:2px solid #d5dce6}
+button{min-height:60px;border:2px solid #b9c4d3;border-radius:14px;background:#fff;color:#17365f;font-size:clamp(13px,1.6vw,19px);font-weight:900;padding:8px;touch-action:manipulation}button.primary{background:#18882d;color:#fff;border-color:#147324}button.stop{background:#df3d2b;border-color:#c43221}
+.hidden{display:none!important}
+@media(max-width:760px) and (orientation:portrait){html,body{overflow:auto}.app{height:auto}.scene{height:68vh;min-height:500px}.controls{grid-template-columns:1fr 1fr}.bike{width:52vw}.meter{width:37vw}.brand{font-size:10px}.power{top:30%}}
+</style>
+</head>
+<body>
+<main class="app">
+<section class="scene" id="scene">
+  <div class="hills"></div><div id="world" class="world"></div><div id="roadline" class="roadline"></div>
+
+  <div class="brand" aria-label="St James Physics Lab">
+    <svg viewBox="0 0 60 60" aria-hidden="true">
+      <path d="M30 8 C22 18 14 25 8 43 C20 48 40 48 52 43 C46 25 38 18 30 8Z" fill="#f2c24e" stroke="#173f73" stroke-width="3"/>
+      <path d="M30 12V46M30 15L17 44M30 15L43 44M30 17L11 40M30 17L49 40" fill="none" stroke="#173f73" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <span>St James<br>Physics Lab</span>
+  </div>
+
+  <div class="power">
+    <div class="powerTitle">CYCLIST<br>POWER</div>
+    <div class="powerValue"><span id="powerValue">100</span>%</div>
+    <input id="powerSlider" type="range" min="0" max="100" step="5" value="100" aria-label="Cyclist power percentage">
+  </div>
+
+  <div id="forces" class="forces hidden">
+    <div class="label driveLabel">Driving force <span id="dN">0</span> N →</div>
+    <div class="label resistLabel">← Resistive force <span id="rN">0</span> N</div>
+    <div id="dArrow" class="fArrow driveArrow zero"></div>
+    <div id="rArrow" class="fArrow resistArrow zero"></div>
+  </div>
+  <div id="result" class="result hidden"><div id="resultText">Resultant force = 0 N</div><div id="resultArrow" class="rArrow right hidden"></div></div>
+
+  <div id="constant" class="constant hidden">CONSTANT SPEED</div>
+  <div id="paused" class="paused hidden">PAUSED</div>
+
+  <svg class="bike" viewBox="0 0 420 245" role="img" aria-label="Road cyclist riding to the right">
+    <!-- fixed tyres/rims -->
+    <circle cx="88" cy="184" r="55" fill="#f9fbfd" stroke="#202938" stroke-width="8"/>
+    <circle cx="330" cy="184" r="55" fill="#f9fbfd" stroke="#202938" stroke-width="8"/>
+    <!-- rotating spokes only -->
+    <g id="rearSpokes" stroke="#9aa3af" stroke-width="2">
+      <path d="M88 129v110M33 184h110M49 145l78 78M127 145l-78 78M67 133l42 102M37 163l102 42M109 133L67 235M139 163L37 205"/>
+    </g>
+    <g id="frontSpokes" stroke="#9aa3af" stroke-width="2">
+      <path d="M330 129v110M275 184h110M291 145l78 78M369 145l-78 78M309 133l42 102M279 163l102 42M351 133l-42 102M381 163l-102 42"/>
+    </g>
+    <circle cx="88" cy="184" r="5" fill="#202938"/><circle cx="330" cy="184" r="5" fill="#202938"/>
+
+    <!-- road-bike frame -->
+    <g fill="none" stroke="#1674d1" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M88 184L169 111L215 184Z"/><path d="M169 111L267 116L215 184"/><path d="M267 116L330 184"/><path d="M169 111L151 184"/>
+    </g>
+    <path d="M158 101h34" stroke="#202938" stroke-width="8" stroke-linecap="round"/>
+    <path d="M260 111q23-17 38 1q-14 4-20 20" fill="none" stroke="#202938" stroke-width="7"/>
+    <circle cx="215" cy="184" r="15" fill="#303846" stroke="#111827" stroke-width="4"/>
+    <g id="crank" stroke="#202938" stroke-width="5" stroke-linecap="round">
+      <line id="crankA" x1="215" y1="184" x2="236" y2="184"/><line id="crankB" x1="215" y1="184" x2="194" y2="184"/>
+    </g>
+
+    <!-- torso/head -->
+    <circle cx="221" cy="42" r="22" fill="#efb08a"/>
+    <path d="M198 37q20-28 47-5l-4 13q-21-12-42 2z" fill="#f5f6f8" stroke="#202938" stroke-width="4"/>
+    <path d="M236 44h13" stroke="#202938" stroke-width="4" stroke-linecap="round"/>
+    <path d="M203 63q29-9 55 23l-25 45q-38-8-67-35z" fill="#e44138" stroke="#202938" stroke-width="4"/>
+
+    <!-- arms, both naturally reaching handlebars -->
+    <path d="M179 88L222 105L274 121" fill="none" stroke="#d99c7c" stroke-width="10" stroke-linecap="round" opacity=".72"/>
+    <path d="M221 83L251 102L283 119" fill="none" stroke="#efb08a" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="274" cy="121" r="6" fill="#202938" opacity=".75"/><circle cx="283" cy="119" r="7" fill="#202938"/>
+
+    <!-- articulated legs -->
+    <path id="farThigh" fill="none" stroke="#303846" stroke-width="15" stroke-linecap="round" opacity=".75"/>
+    <path id="farShin" fill="none" stroke="#303846" stroke-width="13" stroke-linecap="round" opacity=".75"/>
+    <path id="nearThigh" fill="none" stroke="#202938" stroke-width="16" stroke-linecap="round"/>
+    <path id="nearShin" fill="none" stroke="#202938" stroke-width="14" stroke-linecap="round"/>
+    <line id="farFoot" stroke="#f6f7f8" stroke-width="10" stroke-linecap="round"/>
+    <line id="nearFoot" stroke="#f6f7f8" stroke-width="10" stroke-linecap="round"/>
+  </svg>
+
+  <div class="meter">
+    <div class="meterTitle">SPEED</div>
+    <svg class="gauge" viewBox="0 0 200 112">
+      <path d="M25 95 A75 75 0 0 1 175 95" fill="none" stroke="#d9dee7" stroke-width="16" stroke-linecap="round"/>
+      <text x="17" y="109" font-size="13">0</text><text x="162" y="109" font-size="13">30</text>
+      <line id="needle" x1="100" y1="95" x2="42" y2="95" stroke="#e33b25" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="100" cy="95" r="7" fill="#202938"/>
+    </svg>
+    <div class="digital"><span id="speed">0.0</span> km/h</div>
+    <div class="ms"><span id="speedMS">0.0</span> m/s</div>
+  </div>
+</section>
+
+<div class="controls">
+  <button id="cycle" class="primary" type="button">START CYCLING</button>
+  <button id="pause" type="button">PAUSE</button>
+  <button id="forcesBtn" type="button">SHOW FORCES</button>
+  <button id="resultBtn" type="button">SHOW RESULTANT FORCE</button>
+</div>
+</main>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+let cycling=false,paused=false,showF=false,showR=false,powerPct=100;
+let v=0,last=performance.now(),roadOffset=0,wheelAngle=0,crankAngle=0,balancedFor=0;
+const DRIVE=240,MASS=85,ROLLING=35,EQ=8,DRAG=(DRIVE-ROLLING)/(EQ*EQ),STOP=.12,WHEEL_R=.34;
+const objs=[],world=$('world');
+
+function addObj(type,x,scale){
+ const e=document.createElement('div'); e.className='obj '+type; e.style.left=x+'px'; e.style.transform=`scale(${scale})`;
+ if(type==='tree') e.innerHTML='<div class="trunk"></div><div class="crown"></div>';
+ world.appendChild(e); objs.push({e,x});
+}
+function seed(){
+ const w=$('scene').clientWidth;
+ [[.10,'tree',.9],[.31,'bush',.9],[.53,'small',1],[.76,'tree',.75],[1.03,'bush',1.05],[1.30,'tree',.95],[1.57,'small',1.1]].forEach(a=>addObj(a[1],w*a[0],a[2]));
+}
+seed();
+
+function resistance(){return v<=0?0:ROLLING+DRAG*v*v}
+function pointOnCrank(a){const r=22,cx=215,cy=184;return {x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)}}
+function kneeFor(hip,pedal,forward){
+ const mx=(hip.x+pedal.x)/2,my=(hip.y+pedal.y)/2;
+ return {x:mx+(forward?18:-14),y:my-7};
+}
+function setLine(id,a,b){const e=$(id);e.setAttribute('x1',a.x);e.setAttribute('y1',a.y);e.setAttribute('x2',b.x);e.setAttribute('y2',b.y)}
+function setPath(id,a,b){$(id).setAttribute('d',`M${a.x} ${a.y} L${b.x} ${b.y}`)}
+function legs(){
+ const hip={x:226,y:124},p1=pointOnCrank(crankAngle),p2=pointOnCrank(crankAngle+Math.PI);
+ const k1=kneeFor(hip,p1,true),k2=kneeFor(hip,p2,false);
+ setPath('nearThigh',hip,k1);setPath('nearShin',k1,p1);setPath('farThigh',hip,k2);setPath('farShin',k2,p2);
+ setLine('nearFoot',{x:p1.x-6,y:p1.y},{x:p1.x+10,y:p1.y});setLine('farFoot',{x:p2.x-6,y:p2.y},{x:p2.x+10,y:p2.y});
+ setLine('crankA',{x:215,y:184},p1);setLine('crankB',{x:215,y:184},p2);
+}
+
+function update(){
+ const r=resistance(),d=cycling?DRIVE*(powerPct/100):0,net=d-r;
+ $('dN').textContent=Math.round(d);$('rN').textContent=Math.round(r);
+ const maxW=Math.min(330,$('forces').clientWidth*.38);
+ $('dArrow').style.width=(d/DRIVE*maxW)+'px';$('rArrow').style.width=(Math.min(r,DRIVE)/DRIVE*maxW)+'px';
+ $('dArrow').classList.toggle('zero',d<1);$('rArrow').classList.toggle('zero',r<1);
+
+ $('resultText').textContent=Math.abs(net)<2?'Resultant force = 0 N':`Resultant force = ${Math.round(Math.abs(net))} N ${net>0?'→':'←'}`;
+ const ra=$('resultArrow');
+ if(Math.abs(net)<2)ra.classList.add('hidden');else{ra.classList.remove('hidden');ra.className='rArrow '+(net>0?'right':'left');ra.style.width=Math.min(Math.abs(net),DRIVE)/DRIVE*190+'px'}
+
+ const kmh=v*3.6;$('speed').textContent=kmh.toFixed(1);$('speedMS').textContent=v.toFixed(1);
+ $('needle').setAttribute('transform',`rotate(${Math.min(kmh/30,1)*180} 100 95)`);
+ $('rearSpokes').setAttribute('transform',`rotate(${wheelAngle} 88 184)`);
+ $('frontSpokes').setAttribute('transform',`rotate(${wheelAngle} 330 184)`);
+ legs();
+}
+
+function frame(now){
+ const dt=Math.min((now-last)/1000,.05);last=now;
+ if(!paused){
+   const d=cycling?DRIVE*(powerPct/100):0,r=resistance(),net=d-r;
+   v=Math.max(0,v+(net/MASS)*dt);
+   if(!cycling&&v<STOP)v=0;
+   if(cycling&&powerPct===0&&v<STOP)v=0;
+
+   if(v>.5&&Math.abs(net)<3)balancedFor+=dt;else balancedFor=0;
+   $('constant').classList.toggle('hidden',balancedFor<.65);
+
+   const distance=v*dt,visualV=Math.min(v,20/3.6);
+   if(v>0)wheelAngle=(wheelAngle-(visualV*dt/WHEEL_R)*(180/Math.PI))%360;
+
+   // Pedalling follows selected power, not wheel speed.
+   if(cycling&&powerPct>0){
+     const cadenceRPM=35+powerPct*.45; // 39–80 rpm across useful range
+     crankAngle=(crankAngle+cadenceRPM*2*Math.PI/60*dt)%(2*Math.PI);
+   }
+
+   const dx=distance*52;roadOffset=(roadOffset-dx)%116;$('roadline').style.backgroundPositionX=roadOffset+'px';
+   const width=$('scene').clientWidth;
+   objs.forEach(o=>{o.x-=dx;if(o.x<-150)o.x+=width+550+Math.random()*450;o.e.style.left=o.x+'px'});
+ }
+ update();requestAnimationFrame(frame);
+}
+
+$('powerSlider').addEventListener('input',e=>{powerPct=Number(e.target.value);$('powerValue').textContent=powerPct});
+$('cycle').addEventListener('click',()=>{cycling=!cycling;$('cycle').textContent=cycling?'STOP CYCLING':'START CYCLING';$('cycle').classList.toggle('stop',cycling)});
+$('pause').addEventListener('click',()=>{paused=!paused;$('pause').textContent=paused?'RESUME':'PAUSE';$('paused').classList.toggle('hidden',!paused)});
+$('forcesBtn').addEventListener('click',()=>{showF=!showF;$('forces').classList.toggle('hidden',!showF);$('forcesBtn').textContent=showF?'HIDE FORCES':'SHOW FORCES'});
+$('resultBtn').addEventListener('click',()=>{showR=!showR;$('result').classList.toggle('hidden',!showR);$('resultBtn').textContent=showR?'HIDE RESULTANT FORCE':'SHOW RESULTANT FORCE'});
+legs();update();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
