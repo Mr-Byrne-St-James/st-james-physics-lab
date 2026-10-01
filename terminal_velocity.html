@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>St James Physics Lab — Skydiver Forces</title>
+<style>
+:root{--blue:#176fe8;--red:#e65032;--purple:#743db5;--ink:#172033;--green:#26733a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;font-family:Arial,Helvetica,sans-serif;background:#eef4fa;color:var(--ink)}
+.app{height:100dvh;max-width:1200px;margin:auto;display:grid;grid-template-rows:1fr auto;background:#fff}
+.scene{position:relative;min-height:0;overflow:hidden;background:linear-gradient(#258fd8 0%,#6dc2ef 55%,#cdeafa 100%)}
+.haze{position:absolute;inset:auto 0 0;height:26%;background:linear-gradient(transparent,#eaf7fdcc)}
+.brand{position:absolute;z-index:20;right:2%;bottom:12%;display:flex;align-items:center;gap:7px;background:#ffffffdf;border:1px solid #cad3df;border-radius:12px;padding:5px 9px;font-size:12px;font-weight:900}
+.brand svg{width:30px;height:30px}
+.area{position:absolute;z-index:18;left:1.2%;top:24%;width:98px;background:#fffffff2;border:2px solid #c8d1de;border-radius:15px;text-align:center;padding:8px 5px}
+.areaTitle{font-size:12px;font-weight:900;line-height:1.05}.areaValue{font-size:18px;font-weight:900;margin-top:5px}.area input{appearance:none;-webkit-appearance:none;width:158px;height:44px;margin:63px -33px 57px;transform:rotate(-90deg);background:transparent;touch-action:none}
+.area input::-webkit-slider-runnable-track{height:9px;border-radius:8px;background:#cbd5e2}.area input::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#173f73;border:3px solid white;margin-top:-10px;box-shadow:0 0 0 1px #8390a2}
+.area input::-moz-range-track{height:9px;border-radius:8px;background:#cbd5e2}.area input::-moz-range-thumb{width:27px;height:27px;border-radius:50%;background:#173f73;border:3px solid white}
+.areaEnds{font-size:10px;color:#596577;font-weight:700;line-height:1.2}
+.world{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.cloud{position:absolute;width:180px;height:62px;opacity:.78;filter:blur(.2px)}
+.cloud i{position:absolute;background:#fff;border-radius:50%;display:block}.cloud i:nth-child(1){width:105px;height:42px;left:30px;top:20px}.cloud i:nth-child(2){width:62px;height:62px;left:64px;top:0}.cloud i:nth-child(3){width:70px;height:48px;left:103px;top:15px}.cloud i:nth-child(4){width:64px;height:44px;left:0;top:18px}
+.bird{position:absolute;width:42px;height:22px;opacity:.65}.bird:before,.bird:after{content:"";position:absolute;top:9px;width:23px;height:10px;border-top:3px solid #24394a;border-radius:50%}.bird:before{left:0;transform:rotate(14deg)}.bird:after{right:0;transform:rotate(-14deg)}.wisp{position:absolute;width:240px;height:28px;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.68),rgba(255,255,255,0));filter:blur(5px);opacity:0}
+.forces{position:absolute;z-index:14;left:50%;top:2%;transform:translateX(-50%);width:min(900px,88%);height:calc(100% - 25px);pointer-events:none}
+.forceLabel{position:absolute;left:50%;transform:translateX(-50%);font-weight:900;font-size:clamp(14px,1.7vw,21px);white-space:nowrap}
+.dragLabel{top:0;color:var(--blue)}.weightLabel{bottom:0;color:var(--red)}
+.vArrow{position:absolute;left:50%;transform:translateX(-50%);width:14px;border-radius:8px}
+.dragArrow{bottom:61%;background:var(--blue)}.weightArrow{top:64%;background:var(--red)}
+.vArrow:after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-left:16px solid transparent;border-right:16px solid transparent}
+.dragArrow:after{top:-22px;border-bottom:24px solid var(--blue)}.weightArrow:after{bottom:-22px;border-top:24px solid var(--red)}
+.vArrow.zero{height:0!important;background:transparent}.vArrow.zero:after{display:none}
+.result{position:absolute;z-index:15;left:63%;top:38%;width:150px;text-align:center;color:var(--purple);font-size:clamp(13px,1.5vw,19px);font-weight:900}
+.rArrow{position:absolute;left:50%;transform:translateX(-50%);width:10px;background:var(--purple);border-radius:6px}
+.rArrow.down{top:52px}.rArrow.up{bottom:28px}.rArrow:after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-left:12px solid transparent;border-right:12px solid transparent}.rArrow.down:after{bottom:-17px;border-top:19px solid var(--purple)}.rArrow.up:after{top:-17px;border-bottom:19px solid var(--purple)}
+.diver{position:absolute;z-index:10;left:50%;top:48%;transform:translate(-50%,-50%);width:min(360px,37vw);overflow:visible}
+.terminal{position:absolute;z-index:16;left:50%;top:16%;transform:translateX(-50%);background:#fff;border:3px solid var(--green);border-radius:12px;padding:7px 18px;color:#216334;font-weight:900;font-size:clamp(15px,1.8vw,22px);white-space:nowrap}
+.paused{position:absolute;z-index:21;left:50%;top:47%;transform:translate(-50%,-50%);background:#172033e8;color:#fff;border-radius:13px;padding:10px 22px;font-size:22px;font-weight:900;letter-spacing:1px}
+.meter{position:absolute;z-index:17;right:1.5%;top:29%;width:clamp(140px,15vw,165px);background:#fffffff3;border:3px solid #c7d0dc;border-radius:18px;padding:9px 8px;text-align:center}.meterTitle{font-size:13px;font-weight:900;line-height:1.05}.speed{font-size:clamp(30px,4vw,43px);font-weight:900;line-height:.95}.unit{font-size:17px;font-weight:800}.bar{height:118px;width:25px;margin:8px auto;background:#e1e7ee;border-radius:14px;position:relative;overflow:hidden}.barFill{position:absolute;bottom:0;width:100%;background:#e65032;border-radius:14px;transition:height .1s linear}.meterSmall{font-size:11px;color:#637083;font-weight:700}.soundBtn{margin-top:8px;min-height:34px!important;padding:6px 10px!important;font-size:12px!important;border-radius:10px!important}
+.balanceFlash{animation:pulse .55s ease-out}@keyframes pulse{0%{filter:none}45%{filter:drop-shadow(0 0 12px #fff);transform:translateX(-50%) scale(1.035)}100%{filter:none;transform:translateX(-50%) scale(1)}}
+
+button{min-height:60px;border:2px solid #b9c4d3;border-radius:14px;background:#fff;color:#17365f;font-size:clamp(12px,1.5vw,18px);font-weight:900;padding:8px;touch-action:manipulation}button.primary{background:#18882d;color:#fff;border-color:#147324}
+.hidden{display:none!important}
+@media(max-width:760px) and (orientation:portrait){
+ html,body{overflow:auto}
+ .app{height:auto}
+ .scene{height:72vh;min-height:540px}
+ .diver{width:48vw}
+ .meter{right:2%;top:28%;width:145px;padding:8px 7px}
+ .brand{right:2%;bottom:5%;font-size:10px}
+ .area{left:2%;top:26%}
+}
+#diver{opacity:0;transform:translate(-50%,-50%) scale(.16);transition:transform 1.7s cubic-bezier(.2,.8,.25,1),opacity .35s ease}
+#diver.jumped{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#balloon.away{transform:translate(-50%,-95%) scale(.7)!important;opacity:0}
+
+.speedCue{position:absolute;width:2px;height:18px;border-radius:3px;background:rgba(255,255,255,.26);opacity:0}
+
+.accel{
+ position:absolute;z-index:15;left:25%;top:38%;
+ width:190px;text-align:center;color:#16834b;
+ font-size:clamp(13px,1.45vw,18px);font-weight:900;pointer-events:none
+}
+.aArrow{
+ position:absolute;left:50%;transform:translateX(-50%);
+ width:7px;background:repeating-linear-gradient(to bottom,#16834b 0 9px,transparent 9px 15px);
+ border-radius:5px
+}
+.aArrow.down{top:52px}.aArrow.up{bottom:28px}
+.aArrow:after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-left:11px solid transparent;border-right:11px solid transparent}
+.aArrow.down:after{bottom:-16px;border-top:18px solid #16834b}
+.aArrow.up:after{top:-16px;border-bottom:18px solid #16834b}
+.supportLabel{color:#176fe8}
+
+
+.controls{
+ display:grid;
+ grid-template-columns:repeat(3,minmax(120px,1fr)) minmax(300px,1.35fr);
+ align-items:stretch;
+ gap:10px;
+ padding:10px;
+ background:#f4f6f9;
+ border-top:2px solid #d5dce6
+}
+.optionsPanel{
+ min-height:60px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:8px;
+ padding:5px 10px;
+ background:#fff;
+ border:2px solid #cbd4df;
+ border-radius:14px
+}
+.optionsPanel .hidden{display:none!important}
+.physicsOptions{
+ display:flex;
+ align-items:center;
+ gap:10px;
+}
+.optionLabel{
+ display:flex;
+ align-items:center;
+ gap:5px;
+ min-height:44px;
+ font-size:12px;
+ font-weight:900;
+ white-space:nowrap;
+ cursor:pointer;
+ user-select:none
+}
+.optionLabel input{
+ width:22px;
+ height:22px;
+ margin:0;
+ accent-color:#173f73;
+ flex:0 0 auto
+}
+.soundOption{
+ border-left:1px solid #d4dbe5;
+ padding-left:9px;
+}
+@media(max-width:850px){
+ .controls{grid-template-columns:repeat(3,1fr)}
+ .optionsPanel{grid-column:1/-1;min-height:52px;flex-wrap:wrap}
+ .physicsOptions{flex-wrap:wrap;justify-content:center}
+ .optionLabel{min-height:38px;font-size:12px}
+}
+
+
+@media(max-width:900px){
+ .accel{left:21%;width:150px}
+ .result{left:61%;width:145px}
+}
+@media(max-width:650px){
+ .accel{left:18%;width:130px;font-size:12px}
+ .result{left:59%;width:125px;font-size:12px}
+ .meter{width:140px;right:1.5%}
+}
+
+
+#basketDiver{
+ transform-box:fill-box;
+ transform-origin:center;
+ transition:transform .62s ease-in,opacity .45s ease;
+}
+#basketDiver.jumpAway{
+ transform:translate(18px,62px) rotate(20deg);
+ opacity:0;
+}
+#diver{
+ opacity:0;
+ transform:translate(-50%,-50%) scale(.18);
+ transition:transform 1.25s cubic-bezier(.2,.82,.25,1),opacity .35s ease;
+}
+#diver.jumped{
+ opacity:1;
+ transform:translate(-50%,-50%) scale(1);
+ transition-delay:.12s;
+}
+#diver:not(.jumped){transition-delay:0s}
+
+
+#diver{
+ transition:transform 1.25s cubic-bezier(.2,.82,.25,1),opacity .35s ease,width 1.1s ease,top 1.1s ease;
+}
+#diver.underChute{
+ width:min(235px,24vw);
+ top:61%;
+}
+#parachuteRig{
+ position:absolute;
+ z-index:9;
+ left:50%;
+ top:2%;
+ width:min(650px,60vw);
+ height:58%;
+ transform:translateX(-50%) scale(.16);
+ transform-origin:50% 88%;
+ opacity:0;
+ pointer-events:none;
+ transition:none;
+}
+#parachuteRig svg{width:100%;height:100%;overflow:visible}
+#canopyMain{filter:drop-shadow(0 5px 5px rgba(20,40,70,.18))}
+.chuteBadge{
+ position:absolute;
+ z-index:19;
+ left:1.2%;
+ top:28%;
+ width:130px;
+ background:#fffffff2;
+ border:2px solid #c8d1de;
+ border-radius:15px;
+ text-align:center;
+ padding:10px 8px;
+ font-weight:900;
+ color:#173f73;
+}
+.chuteBadge .big{font-size:14px;line-height:1.05}
+.chuteBadge .small{font-size:10px;margin-top:6px;color:#617083;line-height:1.25}
+.comparison{
+ position:absolute;
+ z-index:18;
+ left:50%;
+ top:24%;
+ transform:translateX(-50%);
+ background:#fffffff2;
+ border:2px solid #8eb39a;
+ border-radius:13px;
+ padding:7px 14px;
+ text-align:center;
+ font-size:12px;
+ font-weight:900;
+ line-height:1.35;
+ color:#244a31;
+}
+button:disabled{
+ opacity:.72;
+ cursor:default;
+ background:#e8edf3;
+ color:#586574;
+ border-color:#c6cfda;
+}
+button.deployReady{
+ background:#18882d!important;
+ color:white!important;
+ border-color:#147324!important;
+ opacity:1!important;
+}
+@media(max-width:760px){
+ #parachuteRig{width:min(600px,78vw);top:4%}
+ #diver.underChute{width:31vw;top:62%}
+ .chuteBadge{left:1%;width:112px;font-size:11px}
+}
+
+</style>
+</head>
+<body>
+<main class="app">
+<section class="scene" id="scene">
+<div class="haze"></div><div id="world" class="world"></div>
+<div id="speedCues" aria-hidden="true" style="position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden"></div>
+<div id="balloon" style="position:absolute;z-index:7;left:50%;top:7%;transform:translateX(-50%);transition:transform 1.8s ease,opacity 1.8s ease;">
+<svg width="280" height="300" viewBox="0 0 280 300" aria-label="Hot air balloon">
+ <path d="M140 10C69 10 34 61 54 119c12 37 48 61 66 84h40c18-23 54-47 66-84C246 61 211 10 140 10Z" fill="#f4b941" stroke="#6b4a25" stroke-width="4"/>
+ <path d="M140 15v188M88 33c-17 60 4 122 43 170M192 33c17 60-4 122-43 170" fill="none" stroke="#d6653d" stroke-width="10" opacity=".82"/>
+ <path d="M122 203l-11 28M158 203l11 28" stroke="#6b4a25" stroke-width="4"/>
+
+ <!-- basket back rim -->
+ <path d="M91 228H189" fill="none" stroke="#6f4727" stroke-width="5" stroke-linecap="round"/>
+
+ <!-- perched skydiver: larger and clearly sitting on the rim -->
+ <g id="basketDiver">
+   <!-- torso and hips, leaning outward -->
+   <path d="M129 192 Q141 184 154 187 L161 216 Q147 226 133 218 Z"
+         fill="#1f4f8e" stroke="#182b48" stroke-width="3"/>
+
+   <!-- turquoise suit detail -->
+   <path d="M137 194 Q145 201 154 195" fill="none" stroke="#3fc6e8" stroke-width="4" stroke-linecap="round"/>
+
+   <!-- supporting arm on left rim -->
+   <path d="M134 198 Q121 204 113 215" fill="none" stroke="#263a57" stroke-width="8" stroke-linecap="round"/>
+   <circle cx="111" cy="216" r="5" fill="#ed513c"/>
+
+   <!-- right arm braced on the basket edge -->
+   <path d="M157 197 Q168 203 176 211" fill="none" stroke="#263a57" stroke-width="8" stroke-linecap="round"/>
+   <circle cx="178" cy="212" r="5" fill="#ed513c"/>
+
+   <!-- one leg tucked/bent inside the basket -->
+   <path d="M138 219 Q132 230 124 234" fill="none" stroke="#e84b35" stroke-width="10" stroke-linecap="round"/>
+   <path d="M124 234 L114 232" fill="none" stroke="#26313b" stroke-width="8" stroke-linecap="round"/>
+
+   <!-- one leg hanging outside -->
+   <path d="M154 219 Q167 236 170 257" fill="none" stroke="#e84b35" stroke-width="10" stroke-linecap="round"/>
+   <path d="M170 256 L177 270" fill="none" stroke="#26313b" stroke-width="8" stroke-linecap="round"/>
+
+   <!-- head and helmet -->
+   <circle cx="145" cy="178" r="16" fill="#eab08c" stroke="#27323e" stroke-width="2.5"/>
+   <path d="M130 175Q133 160 145 160Q158 161 160 176Q153 171 145 171Q137 171 130 175Z"
+         fill="#d9e0e6" stroke="#303b45" stroke-width="2.4"/>
+   <path d="M138 184Q145 189 152 184" fill="none" stroke="#e9eef2" stroke-width="5" stroke-linecap="round"/>
+
+   <!-- hanging hair -->
+   <path d="M134 176 Q126 189 128 205
+            M138 174 Q130 188 132 208
+            M156 175 Q164 189 162 203"
+         fill="none" stroke="#6b4029" stroke-width="3.2" stroke-linecap="round"/>
+ </g>
+
+ <!-- basket front panel hides the hips so the diver reads as seated -->
+ <path d="M86 226H194L184 279H96Z" fill="#9b6738" stroke="#5d3c24" stroke-width="5"/>
+ <path d="M98 242H181M105 258H175" stroke="#c9985f" stroke-width="4.2" stroke-linecap="round"/>
+</svg></div>
+
+
+<div class="area">
+ <div class="areaTitle">SURFACE<br>AREA</div>
+ <div class="areaValue"><span id="areaValue">0.55</span> m²</div>
+ <input id="areaSlider" type="range" min="0.30" max="0.80" step="0.05" value="0.55" aria-label="Skydiver surface area">
+ <div class="areaEnds">TUCKED<br>↕<br>SPREAD</div>
+</div>
+
+
+
+<div id="forces" class="forces hidden">
+ <div id="upForceLabel" class="forceLabel dragLabel">↑ Support force <span id="dragN">735</span> N</div>
+ <div id="dragArrow" class="vArrow dragArrow zero"></div>
+ <div id="weightArrow" class="vArrow weightArrow"></div>
+ <div class="forceLabel weightLabel">Weight <span id="weightN">735</span> N ↓</div>
+</div>
+<div id="result" class="result hidden"><div id="resultText">Resultant force = 0 N</div><div id="resultArrow" class="rArrow down hidden"></div></div>
+<div id="accel" class="accel hidden"><div id="accelText">Acceleration = 0 m/s²</div><div id="accelArrow" class="aArrow down hidden"></div></div>
+<div id="terminal" class="terminal hidden">TERMINAL VELOCITY</div>
+<div id="paused" class="paused hidden">PAUSED</div>
+
+
+<div id="parachuteRig" aria-hidden="true">
+ <svg viewBox="0 0 620 420">
+   <!-- suspension lines -->
+   <g id="chuteLines" stroke="#f4f7fb" stroke-width="3.2" opacity="0">
+     <line x1="115" y1="145" x2="278" y2="382"/>
+     <line x1="190" y1="128" x2="289" y2="382"/>
+     <line x1="270" y1="120" x2="300" y2="382"/>
+     <line x1="350" y1="120" x2="320" y2="382"/>
+     <line x1="430" y1="128" x2="331" y2="382"/>
+     <line x1="505" y1="145" x2="342" y2="382"/>
+   </g>
+
+   <!-- canopy -->
+   <g id="canopyMain">
+     <path d="M70 146
+              Q92 60 170 31
+              Q239 5 310 18
+              Q381 5 450 31
+              Q528 60 550 146
+              Q488 120 430 130
+              Q369 105 310 124
+              Q251 105 190 130
+              Q132 120 70 146Z"
+           fill="#f8f8fb" stroke="#173f73" stroke-width="5"/>
+     <path d="M70 146 Q92 60 170 31 Q155 88 190 130 Q132 120 70 146Z"
+           fill="#ef5a45"/>
+     <path d="M170 31 Q239 5 310 18 Q274 69 310 124 Q251 105 190 130 Q155 88 170 31Z"
+           fill="#f5c64a"/>
+     <path d="M310 18 Q381 5 450 31 Q465 88 430 130 Q369 105 310 124 Q346 69 310 18Z"
+           fill="#49a8d8"/>
+     <path d="M450 31 Q528 60 550 146 Q488 120 430 130 Q465 88 450 31Z"
+           fill="#ef5a45"/>
+     <path d="M70 146 Q132 120 190 130 Q251 105 310 124 Q369 105 430 130 Q488 120 550 146"
+           fill="none" stroke="#173f73" stroke-width="5"/>
+   </g>
+ </svg>
+</div>
+
+<div id="chuteBadge" class="chuteBadge hidden">
+ <div id="chuteBadgeMain" class="big">PARACHUTE OPENING…</div>
+ <div id="chuteBadgeSmall" class="small">Surface area greatly increased</div>
+</div>
+
+<div id="comparison" class="comparison hidden"></div>
+
+<svg class="diver" id="diver" viewBox="0 0 420 430" role="img" aria-label="Face-on skydiver">
+ <!-- hair behind head: fixed-length animated strands -->
+ <g id="hair" fill="none" stroke="#6b4029" stroke-width="6" stroke-linecap="round">
+  <path id="h1"/><path id="h2"/><path id="h3"/><path id="h4"/><path id="h5"/><path id="h6"/>
+  <path id="h7"/><path id="h8"/><path id="h9"/><path id="h10"/><path id="h11"/><path id="h12"/>
+ </g>
+  <!-- legs behind torso -->
+ <g stroke="#243d74" stroke-width="30" stroke-linecap="round">
+  <line id="leftThigh" x1="183" y1="250" x2="165" y2="318"/><line id="rightThigh" x1="237" y1="250" x2="255" y2="318"/>
+ </g>
+ <g stroke="#e84b35" stroke-width="27" stroke-linecap="round">
+  <line id="leftShin" x1="165" y1="318" x2="155" y2="383"/><line id="rightShin" x1="255" y1="318" x2="265" y2="383"/>
+ </g>
+ <g stroke="#242b35" stroke-width="20" stroke-linecap="round">
+  <line id="leftBoot" x1="151" y1="382" x2="143" y2="405"/><line id="rightBoot" x1="269" y1="382" x2="277" y2="405"/>
+ </g>
+ <!-- torso -->
+ <path d="M160 139 Q210 113 260 139 L273 246 Q210 274 147 246Z" fill="#1f4f8e" stroke="#182b48" stroke-width="5"/>
+ <path d="M177 148Q210 169 243 148" fill="none" stroke="#3fc6e8" stroke-width="9"/>
+ <!-- arms -->
+ <g stroke="#1f4f8e" stroke-width="31" stroke-linecap="round">
+  <line id="leftUpper" x1="166" y1="158" x2="112" y2="205"/><line id="rightUpper" x1="254" y1="158" x2="308" y2="205"/>
+ </g>
+ <g stroke="#263a57" stroke-width="28" stroke-linecap="round">
+  <line id="leftFore" x1="112" y1="205" x2="72" y2="231"/><line id="rightFore" x1="308" y1="205" x2="348" y2="231"/>
+ </g>
+ <circle id="leftGlove" cx="68" cy="233" r="19" fill="#ed513c" stroke="#202938" stroke-width="5"/>
+ <circle id="rightGlove" cx="352" cy="233" r="19" fill="#ed513c" stroke="#202938" stroke-width="5"/>
+ <!-- head/helmet -->
+ <circle cx="210" cy="118" r="50" fill="#eab08c" stroke="#27323e" stroke-width="5"/>
+ <path d="M162 111Q164 60 210 55Q256 60 258 111Q235 88 210 88Q185 88 162 111Z" fill="#d9e0e6" stroke="#303b45" stroke-width="5"/>
+ <path d="M174 128Q210 153 246 128" fill="none" stroke="#e9eef2" stroke-width="13" stroke-linecap="round"/>
+ <circle cx="192" cy="113" r="4" fill="#26313b"/><circle cx="228" cy="113" r="4" fill="#26313b"/>
+ <path d="M197 133q13 7 26 0" fill="none" stroke="#7e4938" stroke-width="3" stroke-linecap="round"/>
+ <!-- flutter straps -->
+ <path id="strapL" d="" fill="none" stroke="#38c2e6" stroke-width="7" stroke-linecap="round"/>
+ <path id="strapR" d="" fill="none" stroke="#38c2e6" stroke-width="7" stroke-linecap="round"/>
+</svg>
+
+<div class="meter">
+ <div class="meterTitle">FALLING SPEED</div>
+ <div class="speed"><span id="speed">0.0</span></div><div class="unit">m/s</div>
+ <div class="bar"><div id="speedBar" class="barFill" style="height:0%"></div></div>
+ <div class="meterSmall">downwards</div>
+</div>
+
+<div class="brand">
+ <svg viewBox="0 0 60 60"><path d="M30 8C22 18 14 25 8 43C20 48 40 48 52 43C46 25 38 18 30 8Z" fill="#f2c24e" stroke="#173f73" stroke-width="3"/><path d="M30 12V46M30 15L17 44M30 15L43 44M30 17L11 40M30 17L49 40" fill="none" stroke="#173f73" stroke-width="2.5" stroke-linecap="round"/></svg>
+ <span>St James<br>Physics Lab</span>
+</div>
+</section>
+
+<div class="controls">
+ <button id="start" class="primary">JUMP</button>
+ <button id="pause">PAUSE</button>
+ <button id="resetBtn">RESET</button>
+
+ <div class="optionsPanel">
+   <div id="physicsOptions" class="physicsOptions hidden">
+     <label class="optionLabel"><input id="forcesCheck" type="checkbox"> Forces</label>
+     <label class="optionLabel"><input id="resultCheck" type="checkbox"> Resultant force</label>
+     <label class="optionLabel"><input id="accelCheck" type="checkbox"> Acceleration</label>
+   </div>
+   <label class="optionLabel soundOption"><input id="soundCheck" type="checkbox"> 🔈 Sound</label>
+ </div>
+</div>
+</main>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const MASS=75,G=9.8,RHO=1.225,CD=1.0,WEIGHT=MASS*G;
+const CHUTE_AREA=25,CHUTE_CD=1.35,OPENING_TIME=2.4,OPENING_DRAG_CAP=4*WEIGHT;
+let area=.55,v=0,falling=false,paused=false,showF=false,showR=false,showA=false,last=performance.now(),terminalFor=0,atTerminal=false,t=0;
+let phase='perched',deployStarted=0,chuteOpen=0,firstTerminalSpeed=null,secondTerminalSpeed=null;
+let soundOn=false,audioCtx=null,windSource=null,windGain=null,windFilter=null;
+const clouds=[],birds=[],wisps=[],world=$('world');
+$('weightN').textContent=Math.round(WEIGHT);
+
+function makeCloud(x,y,s){
+ const e=document.createElement('div');e.className='cloud';e.innerHTML='<i></i><i></i><i></i><i></i>';e.style.left=x+'px';e.style.top=y+'px';e.style.transform=`scale(${s})`;world.appendChild(e);clouds.push({e,x,y,s});
+}
+function makeBird(x,y){
+ const e=document.createElement('div');e.className='bird';e.style.left=x+'px';e.style.top=y+'px';world.appendChild(e);birds.push({e,x,y});
+}
+function makeWisp(x,y,speed){
+ const e=document.createElement('div');e.className='wisp';e.style.left=x+'px';e.style.top=y+'px';world.appendChild(e);wisps.push({e,x,y,speed});
+}
+function seed(){
+ const w=$('scene').clientWidth,h=$('scene').clientHeight;
+ makeCloud(w*.08,h*.72,.8);makeCloud(w*.72,h*.82,1.1);makeCloud(w*.26,h*1.15,.65);makeCloud(w*.86,h*1.4,.75);
+ makeWisp(w*.18,h*.95,1.8);makeWisp(w*.62,h*1.35,2.25);makeWisp(w*.42,h*1.8,2.6);
+ makeBird(w*.78,h*1.25);
+}
+seed();
+const speedCues=[];
+(function makeSpeedCues(){
+ const box=$('speedCues');
+ for(let i=0;i<22;i++){
+   const e=document.createElement('i'); e.className='speedCue';
+   const x=5+Math.random()*90, y=Math.random()*110;
+   e.style.left=x+'%'; e.style.top=y+'%';
+   e.style.height=(10+Math.random()*18)+'px';
+   box.appendChild(e); speedCues.push({e,y,rate:.75+Math.random()*.65});
+ }
+})();
+
+function bodyDrag(){return .5*RHO*CD*area*v*v}
+function drag(){
+ if(phase==='opening'){
+   const bodyCdA=CD*area;
+   const chuteCdA=CHUTE_CD*CHUTE_AREA;
+   const x=Math.max(0,Math.min(1,(t-deployStarted)/OPENING_TIME));
+   const smooth=x*x*(3-2*x);
+   chuteOpen=smooth;
+   const effectiveCdA=bodyCdA+(chuteCdA-bodyCdA)*smooth;
+   return Math.min(.5*RHO*effectiveCdA*v*v,OPENING_DRAG_CAP);
+ }
+ if(phase==='chute' || phase==='chute_terminal'){
+   chuteOpen=1;
+   return .5*RHO*CHUTE_CD*CHUTE_AREA*v*v;
+ }
+ chuteOpen=0;
+ return bodyDrag();
+}
+function ensureAudio(){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC) return;
+  if(!audioCtx){
+    audioCtx=new AC();
+    const buffer=audioCtx.createBuffer(1,audioCtx.sampleRate*2,audioCtx.sampleRate);
+    const data=buffer.getChannelData(0);
+    for(let i=0;i<data.length;i++) data[i]=Math.random()*2-1;
+    windSource=audioCtx.createBufferSource();
+    windSource.buffer=buffer; windSource.loop=true;
+    const high=audioCtx.createBiquadFilter(); high.type='highpass'; high.frequency.value=180;
+    windFilter=audioCtx.createBiquadFilter(); windFilter.type='bandpass'; windFilter.frequency.value=700; windFilter.Q.value=.75;
+    windGain=audioCtx.createGain(); windGain.gain.value=.0001;
+    windSource.connect(high); high.connect(windFilter); windFilter.connect(windGain); windGain.connect(audioCtx.destination);
+    windSource.start();
+  }
+  if(audioCtx.state==='suspended') audioCtx.resume();
+ }catch(e){}
+}
+function updateWindSound(){
+ if(!audioCtx || !windGain || !windFilter) return;
+ const level=(soundOn && falling && !paused)?Math.min(v/60,1):0;
+ const now=audioCtx.currentTime;
+ windGain.gain.cancelScheduledValues(now);
+ windGain.gain.linearRampToValueAtTime(.0001 + .065*level, now+.12);
+ windFilter.frequency.cancelScheduledValues(now);
+ windFilter.frequency.linearRampToValueAtTime(550 + 1800*level, now+.12);
+}
+function bell(){
+ if(!soundOn){return;}
+ ensureAudio();
+ if(!audioCtx) return;
+ try{
+   const n=audioCtx.currentTime;
+   const g=audioCtx.createGain(); g.connect(audioCtx.destination);
+   g.gain.setValueAtTime(.0001,n);
+   g.gain.exponentialRampToValueAtTime(.10,n+.01);
+   g.gain.exponentialRampToValueAtTime(.0001,n+.45);
+   [880,1320].forEach((f,i)=>{const o=audioCtx.createOscillator(),q=audioCtx.createGain();o.type='sine';o.frequency.value=f;q.gain.value=i?.25:.7;o.connect(q);q.connect(g);o.start(n);o.stop(n+.48);});
+ }catch(e){}
+}
+function deployWhoomp(){
+ if(!soundOn){return;}
+ ensureAudio();
+ if(!audioCtx)return;
+ try{
+   const n=audioCtx.currentTime;
+   const o=audioCtx.createOscillator();
+   const g=audioCtx.createGain();
+   const f=audioCtx.createBiquadFilter();
+   o.type='sine';o.frequency.setValueAtTime(115,n);o.frequency.exponentialRampToValueAtTime(58,n+.65);
+   f.type='lowpass';f.frequency.value=700;
+   g.gain.setValueAtTime(.0001,n);g.gain.exponentialRampToValueAtTime(.11,n+.035);g.gain.exponentialRampToValueAtTime(.0001,n+.75);
+   o.connect(f);f.connect(g);g.connect(audioCtx.destination);o.start(n);o.stop(n+.8);
+ }catch(e){}
+}
+function celebrate(){bell();if(showF){const e=$('forces');e.classList.remove('balanceFlash');void e.offsetWidth;e.classList.add('balanceFlash');setTimeout(()=>e.classList.remove('balanceFlash'),650)}}
+
+function posture(){
+ const p=(area-.30)/.50;
+ const hang=(phase==='opening'||phase==='chute'||phase==='chute_terminal') ? chuteOpen : 0;
+
+ const shoulderL={x:166,y:158},shoulderR={x:254,y:158};
+ const freeElbowLX=145-55*p, freeElbowRX=275+55*p, freeElbowY=196-8*p;
+ const freeHandLX=132-83*p, freeHandRX=288+83*p, freeHandY=230-13*p;
+
+ const elbowLX=freeElbowLX*(1-hang)+178*hang;
+ const elbowRX=freeElbowRX*(1-hang)+242*hang;
+ const elbowY=freeElbowY*(1-hang)+214*hang;
+ const handLX=freeHandLX*(1-hang)+180*hang;
+ const handRX=freeHandRX*(1-hang)+240*hang;
+ const handY=freeHandY*(1-hang)+252*hang;
+
+ [['leftUpper',shoulderL,{x:elbowLX,y:elbowY}],['rightUpper',shoulderR,{x:elbowRX,y:elbowY}],
+ ['leftFore',{x:elbowLX,y:elbowY},{x:handLX,y:handY}],['rightFore',{x:elbowRX,y:elbowY},{x:handRX,y:handY}]]
+ .forEach(([id,a,b])=>{let e=$(id);e.setAttribute('x1',a.x);e.setAttribute('y1',a.y);e.setAttribute('x2',b.x);e.setAttribute('y2',b.y)});
+
+ $('leftGlove').setAttribute('cx',handLX);$('leftGlove').setAttribute('cy',handY);
+ $('rightGlove').setAttribute('cx',handRX);$('rightGlove').setAttribute('cy',handY);
+
+ const freeKneeLX=188-35*p,freeKneeRX=232+35*p,freeFootLX=184-58*p,freeFootRX=236+58*p;
+ const kneeLX=freeKneeLX*(1-hang)+194*hang;
+ const kneeRX=freeKneeRX*(1-hang)+226*hang;
+ const footLX=freeFootLX*(1-hang)+198*hang;
+ const footRX=freeFootRX*(1-hang)+222*hang;
+
+ [['leftThigh',{x:183,y:250},{x:kneeLX,y:318}],['rightThigh',{x:237,y:250},{x:kneeRX,y:318}],
+ ['leftShin',{x:kneeLX,y:318},{x:footLX,y:383}],['rightShin',{x:kneeRX,y:318},{x:footRX,y:383}],
+ ['leftBoot',{x:footLX,y:382},{x:footLX-3,y:405}],['rightBoot',{x:footRX,y:382},{x:footRX+3,y:405}]]
+ .forEach(([id,a,b])=>{let e=$(id);e.setAttribute('x1',a.x);e.setAttribute('y1',a.y);e.setAttribute('x2',b.x);e.setAttribute('y2',b.y)});
+}
+function animateHair(){
+ const q=Math.min(v/48,1);
+ const L=92; // fixed visual length: speed changes direction and shape, never length
+ for(let i=1;i<=12;i++){
+   // roots stay visible around the sides/back of the head
+   const rootX=168+(i-1)*7.65, rootY=88+(Math.abs(i-6.5)*1.0);
+   const phase=t*(4.2+(i%5)*.31)+i*.79;
+   // Rotate the SAME length from downward at rest to upward at speed.
+   const theta=(Math.PI/2) - q*Math.PI; 
+   const flutter=(3+7*q)*Math.sin(phase);
+   const nx=Math.cos(theta), ny=Math.sin(theta);
+   const px=-ny, py=nx;
+   const ex=rootX+L*nx+px*flutter*.45;
+   const ey=rootY+L*ny+py*flutter*.45;
+   // Two alternating bends make the strands deliberately loose/jangly.
+   const bend1=(5+8*q)*Math.sin(phase+.7);
+   const bend2=(5+9*q)*Math.sin(phase+2.0);
+   const c1x=rootX+L*.34*nx+px*bend1, c1y=rootY+L*.34*ny+py*bend1;
+   const c2x=rootX+L*.70*nx+px*bend2, c2y=rootY+L*.70*ny+py*bend2;
+   $(`h${i}`).setAttribute('d',`M${rootX.toFixed(1)} ${rootY.toFixed(1)} C${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`);
+ }
+ const sweep=Math.min(v/50,1);
+ $('strapL').setAttribute('d',`M162 184 Q${148+Math.sin(t*8)*9} ${170-28*sweep} ${152+Math.sin(t*10)*12} ${154-52*sweep}`);
+ $('strapR').setAttribute('d',`M258 184 Q${272+Math.sin(t*8+2)*9} ${170-28*sweep} ${268+Math.sin(t*10+1)*12} ${154-52*sweep}`);
+}
+
+function renderParachute(){
+ const rig=$('parachuteRig');
+ if(phase!=='opening' && phase!=='chute' && phase!=='chute_terminal'){
+   rig.style.opacity='0';
+   rig.style.transform='translateX(-50%) scale(.16)';
+   $('chuteLines').setAttribute('opacity','0');
+   return;
+ }
+ const o=Math.max(.03,chuteOpen);
+ const visual=0.16+0.84*o;
+ rig.style.opacity=Math.min(1,o*2.3).toFixed(2);
+ rig.style.transform=`translateX(-50%) scale(${visual.toFixed(3)})`;
+ $('chuteLines').setAttribute('opacity',Math.min(1,o*1.6).toFixed(2));
+}
+
+function update(){
+ const D=falling ? drag() : 0;
+ const upForce=falling ? D : WEIGHT;
+ const net=falling ? (WEIGHT-D) : 0;
+ const a=net/MASS;
+
+ $('upForceLabel').innerHTML = falling
+   ? `↑ Air resistance <span id="dragN">${Math.round(upForce)}</span> N`
+   : `↑ Support force <span id="dragN">${Math.round(upForce)}</span> N`;
+
+ const maxH=Math.min(150,$('scene').clientHeight*.22);
+ $('weightArrow').style.height=maxH+'px';
+ $('dragArrow').style.height=Math.min(upForce/WEIGHT,1.65)*maxH+'px';
+ $('dragArrow').classList.toggle('zero',upForce<1);
+
+ $('resultText').innerHTML=Math.abs(net)<2
+   ? 'Resultant force<br>= 0 N'
+   : `Resultant force<br>= ${Math.round(Math.abs(net))} N ${net>0?'↓':'↑'}`;
+ const ra=$('resultArrow');
+ if(Math.abs(net)<2){
+   ra.classList.add('hidden');
+ }else{
+   ra.classList.remove('hidden');
+   ra.className='rArrow '+(net>0?'down':'up');
+   ra.style.height=Math.min(Math.abs(net)/WEIGHT,1.35)*95+'px';
+ }
+
+ $('accelText').textContent=Math.abs(a)<0.03
+   ? 'Acceleration = 0 m/s²'
+   : `Acceleration = ${Math.abs(a).toFixed(1)} m/s² ${a>0?'↓':'↑'}`;
+ const aa=$('accelArrow');
+ if(Math.abs(a)<0.03){
+   aa.classList.add('hidden');
+ }else{
+   aa.classList.remove('hidden');
+   aa.className='aArrow '+(a>0?'down':'up');
+   aa.style.height=(28 + Math.min(Math.abs(a),12)/12*82)+'px';
+ }
+
+ $('speed').textContent=v.toFixed(1);
+ $('speedBar').style.height=Math.min(v/65*100,100)+'%';
+ updateWindSound();
+ posture();animateHair();renderParachute();
+}
+function setActionButton(text,enabled,ready=false){
+ const b=$('start');
+ b.textContent=text;
+ b.disabled=!enabled;
+ b.classList.toggle('deployReady',ready);
+}
+
+function firstTerminalReached(){
+ phase='ready';
+ firstTerminalSpeed=v;
+ terminalFor=0;atTerminal=true;
+ $('terminal').textContent='TERMINAL VELOCITY';
+ $('terminal').classList.remove('hidden');
+ setActionButton('DEPLOY PARACHUTE',true,true);
+ celebrate();
+}
+
+function secondTerminalReached(){
+ phase='chute_terminal';
+ secondTerminalSpeed=v;
+ terminalFor=0;atTerminal=true;
+ $('terminal').textContent='NEW TERMINAL VELOCITY';
+ $('terminal').classList.remove('hidden');
+ setActionButton('PARACHUTE OPEN',false,false);
+ $('comparison').innerHTML=
+   `Free-fall terminal velocity: ${firstTerminalSpeed?firstTerminalSpeed.toFixed(1):'—'} m/s<br>`+
+   `With parachute: ${secondTerminalSpeed.toFixed(1)} m/s`;
+ $('comparison').classList.remove('hidden');
+ celebrate();
+}
+
+function deployParachute(){
+ phase='opening';
+ deployStarted=t;
+ chuteOpen=.03;
+ terminalFor=0;atTerminal=false;
+ $('terminal').classList.add('hidden');
+ $('comparison').classList.add('hidden');
+ $('areaSlider').disabled=true;
+ document.querySelector('.area').classList.add('hidden');
+ $('chuteBadge').classList.remove('hidden');
+ $('chuteBadgeMain').textContent='PARACHUTE OPENING…';
+ $('chuteBadgeSmall').textContent='Surface area greatly increased';
+ $('diver').classList.add('underChute');
+ setActionButton('OPENING…',false,false);
+ deployWhoomp();
+}
+
+function frame(now){
+ const dt=Math.min((now-last)/1000,.05);last=now;
+ if(!paused){
+  t+=dt;
+  if(falling){
+   let D=drag(),net=WEIGHT-D;
+   v=Math.max(0,v+(net/MASS)*dt);
+
+   // Recalculate after speed update.
+   D=drag();net=WEIGHT-D;
+
+   if(phase==='freefall' || phase==='ready'){
+     if(Math.abs(net)<3 && v>2) terminalFor+=dt; else terminalFor=0;
+
+     if(phase==='freefall' && terminalFor>.5){
+       const vt=Math.sqrt((2*WEIGHT)/(RHO*CD*area));
+       v=vt;
+       firstTerminalReached();
+     }
+   }
+
+   if(phase==='opening'){
+     // Deployment ends only when the timed opening has completed AND
+     // the speed has dropped far enough that full-canopy drag is not discontinuous.
+     const elapsed=t-deployStarted;
+     if(elapsed>=OPENING_TIME && v<=12.5){
+       phase='chute';
+       chuteOpen=1;
+       $('chuteBadgeMain').textContent='PARACHUTE DEPLOYED';
+       $('chuteBadgeSmall').textContent='Large canopy area • falling more slowly';
+       setActionButton('PARACHUTE OPEN',false,false);
+       terminalFor=0;
+     }
+   } else if(phase==='chute'){
+     if(Math.abs(net)<3 && v>1) terminalFor+=dt; else terminalFor=0;
+     if(terminalFor>.55){
+       const vt=Math.sqrt((2*WEIGHT)/(RHO*CHUTE_CD*CHUTE_AREA));
+       v=vt;
+       secondTerminalReached();
+     }
+   }
+
+   const dy=v*dt*4.2,h=$('scene').clientHeight,w=$('scene').clientWidth;
+   clouds.forEach(c=>{c.y-=dy*c.s;if(c.y<-100){c.y=h+100+Math.random()*h*.7;c.x=Math.random()*w*.9}c.e.style.top=c.y+'px';c.e.style.left=c.x+'px'});
+   wisps.forEach(ws=>{
+     ws.y-=dy*ws.speed;
+     if(ws.y<-80){ws.y=h+140+Math.random()*h*1.1;ws.x=Math.random()*w*.85}
+     const op=Math.min(.55,Math.max(0,(v-8)/60));
+     ws.e.style.top=ws.y+'px'; ws.e.style.left=ws.x+'px'; ws.e.style.opacity=op.toFixed(2);
+     ws.e.style.transform=`scale(${0.9+Math.min(v/60,.5)})`;
+   });
+   birds.forEach(b=>{b.y-=dy*.85;if(b.y<-40){b.y=h+300+Math.random()*h*1.5;b.x=w*(.15+Math.random()*.75)}b.e.style.top=b.y+'px';b.e.style.left=b.x+'px'});
+   const cueOpacity=Math.min(.42,v/60);
+   speedCues.forEach(c=>{
+     c.y-=v*dt*c.rate*.095;
+     if(c.y<-8)c.y=106+Math.random()*10;
+     c.e.style.top=c.y+'%';
+     c.e.style.opacity=cueOpacity.toFixed(2);
+     c.e.style.height=(10 + Math.min(v,60)*.45*c.rate)+'px';
+   });
+  }
+ }
+ update();requestAnimationFrame(frame);
+}
+function reset(){
+ area=.55;v=0;falling=false;paused=false;showF=false;showR=false;showA=false;
+ terminalFor=0;atTerminal=false;t=0;soundOn=false;
+ phase='perched';deployStarted=0;chuteOpen=0;firstTerminalSpeed=null;secondTerminalSpeed=null;
+
+ $('areaSlider').value=.55;$('areaSlider').disabled=false;$('areaValue').textContent='.55';
+ document.querySelector('.area').classList.remove('hidden');
+ $('chuteBadge').classList.add('hidden');
+ $('comparison').classList.add('hidden');
+ $('terminal').textContent='TERMINAL VELOCITY';
+ $('start').disabled=false;$('start').classList.remove('deployReady');$('start').textContent='JUMP';
+ $('pause').textContent='PAUSE';$('paused').classList.add('hidden');$('terminal').classList.add('hidden');
+ $('diver').classList.remove('jumped','underChute');$('balloon').classList.remove('away');
+ $('basketDiver').classList.remove('jumpAway');
+ $('diver').style.transform='translate(-50%,-50%) scale(.18)';
+ $('forces').classList.add('hidden');$('result').classList.add('hidden');$('accel').classList.add('hidden');
+ $('forcesCheck').checked=false;$('resultCheck').checked=false;$('accelCheck').checked=false;$('soundCheck').checked=false;
+ $('physicsOptions').classList.add('hidden');
+ updateWindSound();update();
+}
+$('areaSlider').addEventListener('input',e=>{
+ area=Number(e.target.value);$('areaValue').textContent=area.toFixed(2);
+ terminalFor=0;atTerminal=false;
+ if(phase==='ready'){
+   phase='freefall';
+   $('terminal').classList.add('hidden');
+   setActionButton('FALLING',false,false);
+ }
+});
+$('start').onclick=()=>{
+ if(phase==='perched'){
+   falling=true;phase='freefall';
+   $('basketDiver').classList.add('jumpAway');
+   $('diver').style.transform='';
+   $('diver').classList.add('jumped');$('balloon').classList.add('away');
+   $('physicsOptions').classList.remove('hidden');
+   setActionButton('FALLING',false,false);
+   if(soundOn) ensureAudio();
+   update();
+   return;
+ }
+ if(phase==='ready'){
+   deployParachute();
+ }
+};
+$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'RESUME':'PAUSE';$('paused').classList.toggle('hidden',!paused)};
+
+$('forcesCheck').addEventListener('change',e=>{
+ showF=e.target.checked;
+ $('forces').classList.toggle('hidden',!showF);
+});
+$('resultCheck').addEventListener('change',e=>{
+ showR=e.target.checked;
+ $('result').classList.toggle('hidden',!showR);
+});
+$('accelCheck').addEventListener('change',e=>{
+ showA=e.target.checked;
+ $('accel').classList.toggle('hidden',!showA);
+});
+$('soundCheck').addEventListener('change',e=>{
+ soundOn=e.target.checked;
+ if(soundOn) ensureAudio();
+ updateWindSound();
+});
+
+$('resetBtn').onclick=reset;
+reset();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
