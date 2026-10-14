@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Algebraic Indices – Step by Step</title>
+<style>
+:root{
+  --bg:#eef2f7; --paper:#fffdf7; --ink:#1f2937; --muted:#667085;
+  --blue:#2f67c8; --navy:#244c7a; --green:#147a4b; --grey:#e7ebf2;
+  --line:#d8d2c3; --yellow:#fff0b8; --cream:#fff7d9;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+body{padding:6px;display:flex;justify-content:center}
+.app{
+  width:min(1020px,100%);height:calc(100vh - 12px);min-height:585px;
+  display:grid;grid-template-rows:auto auto 1fr auto;background:white;
+  border:1px solid #d9e0ea;border-radius:16px;overflow:hidden;
+  box-shadow:0 10px 28px rgba(0,0,0,.08)
+}
+.header{text-align:center;padding:8px 12px 6px;border-bottom:1px solid #e4e8ef}
+.header h1{margin:0;color:var(--navy);font-size:clamp(22px,3vw,31px)}
+.header p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.tabs{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:5px;padding:6px 8px;
+  background:#fafbfd;border-bottom:1px solid #e4e8ef
+}
+.tab{
+  min-height:42px;border:1px solid #ccd4df;border-radius:9px;background:white;
+  font-weight:800;color:#344054;font-size:12px;padding:4px 6px;cursor:pointer
+}
+.tab small{display:block;color:#7b8493;font-weight:600;font-size:10px;margin-top:1px}
+.tab.active{background:#eaf1ff;border:2px solid var(--blue);color:#214e9c}
+.tab:disabled{opacity:.45}
+.main{min-height:0;padding:8px}
+.paper{
+  height:100%;overflow:hidden;padding:12px 16px 10px 42px;border:1px solid var(--line);
+  border-radius:12px;
+  background:
+    repeating-linear-gradient(to bottom,transparent 0,transparent 40px,rgba(133,153,182,.18) 41px),
+    var(--paper);
+  box-shadow:inset 30px 0 0 rgba(220,80,80,.06)
+}
+.intro{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;text-align:center}
+.intro h2{margin:0}
+.rulegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:820px}
+.rulebox{border:1px solid #dfe5ec;background:#f8fafc;border-radius:10px;padding:8px}
+.rulebox strong{display:block;margin-bottom:4px;font-size:13px}
+.rulemath{font:800 clamp(20px,3vw,29px) "Trebuchet MS",Arial}
+.key{background:var(--navy);color:white;padding:8px 12px;border-radius:9px;font-weight:800}
+.memory{background:var(--cream);border:1px solid #eed995;padding:7px 10px;border-radius:9px;font-weight:800}
+.work{height:100%;display:none;grid-template-rows:auto 1fr auto}
+.qrow{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:7px;border-bottom:1px dashed #d3cec1}
+.label{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.rulename{font-size:13px;color:var(--blue);font-weight:800}
+.counter{font-size:11px;color:#7b8493;font-weight:800}
+.question{font:800 clamp(21px,3.5vw,33px) "Trebuchet MS",Arial;text-align:right}
+.lines{min-height:0;display:grid;grid-template-rows:repeat(7,1fr);padding-top:4px}
+.line{
+  display:flex;align-items:center;padding:2px 7px;border-radius:7px;
+  font:700 clamp(16px,2.8vw,27px) "Trebuchet MS",Arial;
+  line-height:1.15;opacity:0;transform:translateY(-2px);
+  transition:opacity .2s ease,transform .2s ease,background .4s ease;
+  overflow:hidden
+}
+.line.visible{opacity:1;transform:none}
+.line.flash{background:var(--yellow)}
+.line.final{color:var(--green);font-weight:800}
+.helper{min-height:26px;padding-top:4px;border-top:1px dashed #d3cec1;color:var(--muted);font-size:12px}
+.controls{
+  min-height:56px;display:flex;justify-content:center;align-items:center;gap:7px;flex-wrap:wrap;
+  padding:7px;background:#fafbfd;border-top:1px solid #e4e8ef
+}
+.control{min-height:42px;min-width:96px;border:0;border-radius:9px;padding:7px 11px;font-weight:800;cursor:pointer}
+.primary{background:var(--blue);color:white}
+.secondary{background:var(--grey);color:#253247}
+.success{background:var(--green);color:white}
+.hidden{display:none!important}
+.control:disabled{opacity:.4}
+
+sup{
+  font-size:0.62em;
+  line-height:0;
+  position:relative;
+  top:-0.52em;
+  margin-left:0.02em;
+  font-weight:800;
+}
+.frac{display:inline-grid;grid-template-rows:auto auto;vertical-align:middle;text-align:center;line-height:1.05}
+.frac .top{border-bottom:1.5px solid currentColor;padding:0 .12em .05em}
+.frac .bottom{padding:.05em .12em 0}
+.cancel{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:#b42318}
+
+@media(max-width:760px){
+  .tabs{grid-template-columns:repeat(2,1fr)}
+  .rulegrid{grid-template-columns:1fr}
+  .header p{display:none}
+  .paper{padding-left:34px}
+  .line{font-size:clamp(14px,3.5vw,21px)}
+  .question{font-size:clamp(18px,4.2vw,25px)}
+}
+@media(max-width:430px){
+  .tab small{display:none}
+  .controls{gap:4px}
+  .control{min-width:82px;padding:6px 8px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Rules for Algebraic Indices</h1>
+    <p>Watch each solution build up line by line.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" data-rule="0" disabled>1. Multiply<small>Add the indices</small></button>
+    <button class="tab" data-rule="1" disabled>2. Divide<small>Subtract the indices</small></button>
+    <button class="tab" data-rule="2" disabled>3. Power of a power<small>Multiply the indices</small></button>
+    <button class="tab" data-rule="3" disabled>4. Zero index<small>a⁰ = 1</small></button>
+    <button class="tab" data-rule="4" disabled>5. Negative index<small>a⁻ⁿ = 1/aⁿ</small></button>
+    <button class="tab" data-rule="5" disabled>6. Index of 1<small>a¹ = a</small></button>
+    <button class="tab" data-rule="6" disabled style="grid-column:span 2">Mixed Challenge<small>10 supported examples</small></button>
+  </div>
+
+  <div class="main">
+    <div class="paper">
+      <div id="intro" class="intro">
+        <h2>The three main index laws</h2>
+        <div class="rulegrid">
+          <div class="rulebox"><strong>Multiply → add</strong><div class="rulemath">a<sup>m</sup> × a<sup>n</sup> = a<sup>m+n</sup></div></div>
+          <div class="rulebox"><strong>Divide → subtract</strong><div class="rulemath">a<sup>m</sup> ÷ a<sup>n</sup> = a<sup>m−n</sup></div></div>
+          <div class="rulebox"><strong>Power of a power → multiply</strong><div class="rulemath">(a<sup>m</sup>)<sup>n</sup> = a<sup>mn</sup></div></div>
+        </div>
+        <div class="key">These index laws only work directly when the BASE is the same.</div>
+        <div class="memory">× → ADD &nbsp;&nbsp; ÷ → SUBTRACT &nbsp;&nbsp; power of a power → MULTIPLY</div>
+      </div>
+
+      <div id="work" class="work">
+        <div class="qrow">
+          <div>
+            <div class="label">Question</div>
+            <div id="ruleName" class="rulename"></div>
+            <div id="counter" class="counter"></div>
+          </div>
+          <div id="question" class="question"></div>
+        </div>
+
+        <div class="lines">
+          <div class="line" id="l0"></div>
+          <div class="line" id="l1"></div>
+          <div class="line" id="l2"></div>
+          <div class="line" id="l3"></div>
+          <div class="line" id="l4"></div>
+          <div class="line" id="l5"></div>
+          <div class="line" id="l6"></div>
+        </div>
+
+        <div id="helper" class="helper">Press NEXT to reveal the first line of working.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn" class="control primary">START</button>
+    <button id="resetBtn" class="control secondary hidden">RESET</button>
+    <button id="backBtn" class="control secondary hidden">◀ BACK</button>
+    <button id="nextBtn" class="control primary hidden">NEXT ▶</button>
+    <button id="anotherBtn" class="control success hidden">ANOTHER EXAMPLE →</button>
+  </div>
+</div>
+
+<script>
+const frac=(top,bottom)=>`<span class="frac"><span class="top">${top}</span><span class="bottom">${bottom}</span></span>`;
+
+const rules=[
+{
+ name:"Multiply: add the indices",
+ examples:[
+  {q:"a<sup>3</sup> × a<sup>5</sup>",l:["=(a · a · a)(a · a · a · a · a)","=a · a · a · a · a · a · a · a","=a<sup>8</sup>","=a<sup>3+5</sup> = a<sup>8</sup>"],h:["Write each power as repeated multiplication.","Put all the factors together.","Count the a factors.","When multiplying the same base, add the indices."]},
+  {q:"b<sup>2</sup> × b<sup>4</sup>",l:["=(b · b)(b · b · b · b)","=b · b · b · b · b · b","=b<sup>6</sup>","=b<sup>2+4</sup> = b<sup>6</sup>"],h:["Write each power as repeated multiplication.","Put all the factors together.","Count the b factors.","When multiplying the same base, add the indices."]},
+  {q:"p<sup>4</sup> × p<sup>3</sup>",l:["=(p · p · p · p)(p · p · p)","=p · p · p · p · p · p · p","=p<sup>7</sup>","=p<sup>4+3</sup> = p<sup>7</sup>"],h:["Write each power as repeated multiplication.","Put all the factors together.","Count the p factors.","When multiplying the same base, add the indices."]},
+  {q:"m<sup>5</sup> × m<sup>2</sup>",l:["=(m · m · m · m · m)(m · m)","=m · m · m · m · m · m · m","=m<sup>7</sup>","=m<sup>5+2</sup> = m<sup>7</sup>"],h:["Write each power as repeated multiplication.","Put all the factors together.","Count the m factors.","When multiplying the same base, add the indices."]},
+  {q:"q<sup>3</sup> × q<sup>3</sup>",l:["=(q · q · q)(q · q · q)","=q · q · q · q · q · q","=q<sup>6</sup>","=q<sup>3+3</sup> = q<sup>6</sup>"],h:["Write each power as repeated multiplication.","Put all the factors together.","Count the q factors.","When multiplying the same base, add the indices."]}
+ ]
+},
+{
+ name:"Divide: subtract the indices",
+ examples:[
+  {q:"b<sup>7</sup> ÷ b<sup>2</sup>",l:[
+    `=${frac("b · b · b · b · b · b · b","b · b")}`,
+    `=${frac('<span class="cancel">b</span> · <span class="cancel">b</span> · b · b · b · b · b','<span class="cancel">b</span> · <span class="cancel">b</span>')}`,
+    "=b · b · b · b · b","=b<sup>5</sup>","=b<sup>7−2</sup> = b<sup>5</sup>"],
+    h:["Write each power as repeated multiplication.","Cancel the same factors from top and bottom.","Count what remains.","Write the remaining factors as a power.","When dividing the same base, subtract the indices."]},
+  {q:"a<sup>6</sup> ÷ a<sup>3</sup>",l:[
+    `=${frac("a · a · a · a · a · a","a · a · a")}`,
+    `=${frac('<span class="cancel">a</span> · <span class="cancel">a</span> · <span class="cancel">a</span> · a · a · a','<span class="cancel">a</span> · <span class="cancel">a</span> · <span class="cancel">a</span>')}`,
+    "=a · a · a","=a<sup>3</sup>","=a<sup>6−3</sup> = a<sup>3</sup>"],
+    h:["Write each power as repeated multiplication.","Cancel the same factors from top and bottom.","Count what remains.","Write the remaining factors as a power.","When dividing the same base, subtract the indices."]},
+  {q:"p<sup>5</sup> ÷ p<sup>2</sup>",l:[
+    `=${frac("p · p · p · p · p","p · p")}`,
+    `=${frac('<span class="cancel">p</span> · <span class="cancel">p</span> · p · p · p','<span class="cancel">p</span> · <span class="cancel">p</span>')}`,
+    "=p · p · p","=p<sup>3</sup>","=p<sup>5−2</sup> = p<sup>3</sup>"],
+    h:["Write each power as repeated multiplication.","Cancel the same factors from top and bottom.","Count what remains.","Write the remaining factors as a power.","When dividing the same base, subtract the indices."]},
+  {q:"m<sup>8</sup> ÷ m<sup>4</sup>",l:[
+    `=${frac("m · m · m · m · m · m · m · m","m · m · m · m")}`,
+    `=${frac('<span class="cancel">m</span> · <span class="cancel">m</span> · <span class="cancel">m</span> · <span class="cancel">m</span> · m · m · m · m','<span class="cancel">m</span> · <span class="cancel">m</span> · <span class="cancel">m</span> · <span class="cancel">m</span>')}`,
+    "=m · m · m · m","=m<sup>4</sup>","=m<sup>8−4</sup> = m<sup>4</sup>"],
+    h:["Write each power as repeated multiplication.","Cancel the same factors from top and bottom.","Count what remains.","Write the remaining factors as a power.","When dividing the same base, subtract the indices."]},
+  {q:"q<sup>4</sup> ÷ q<sup>1</sup>",l:[
+    `=${frac("q · q · q · q","q")}`,
+    `=${frac('<span class="cancel">q</span> · q · q · q','<span class="cancel">q</span>')}`,
+    "=q · q · q","=q<sup>3</sup>","=q<sup>4−1</sup> = q<sup>3</sup>"],
+    h:["Write each power as repeated multiplication.","Cancel the same factors from top and bottom.","Count what remains.","Write the remaining factors as a power.","When dividing the same base, subtract the indices."]}
+ ]
+},
+{
+ name:"Power of a power: multiply the indices",
+ examples:[
+  {q:"(p<sup>2</sup>)<sup>4</sup>",l:["=(p<sup>2</sup>)(p<sup>2</sup>)(p<sup>2</sup>)(p<sup>2</sup>)","=(p · p)(p · p)(p · p)(p · p)","=p · p · p · p · p · p · p · p","=p<sup>8</sup>","=p<sup>2×4</sup> = p<sup>8</sup>"],h:["A power of 4 means four lots of p².","Expand each p².","Put all the p factors together.","Count the p factors.","For a power of a power, multiply the indices."]},
+  {q:"(a<sup>3</sup>)<sup>2</sup>",l:["=(a<sup>3</sup>)(a<sup>3</sup>)","=(a · a · a)(a · a · a)","=a · a · a · a · a · a","=a<sup>6</sup>","=a<sup>3×2</sup> = a<sup>6</sup>"],h:["A power of 2 means two lots of a³.","Expand each a³.","Put all the a factors together.","Count the a factors.","For a power of a power, multiply the indices."]},
+  {q:"(m<sup>2</sup>)<sup>3</sup>",l:["=(m<sup>2</sup>)(m<sup>2</sup>)(m<sup>2</sup>)","=(m · m)(m · m)(m · m)","=m · m · m · m · m · m","=m<sup>6</sup>","=m<sup>2×3</sup> = m<sup>6</sup>"],h:["A power of 3 means three lots of m².","Expand each m².","Put all the m factors together.","Count the m factors.","For a power of a power, multiply the indices."]},
+  {q:"(q<sup>4</sup>)<sup>2</sup>",l:["=(q<sup>4</sup>)(q<sup>4</sup>)","=(q · q · q · q)(q · q · q · q)","=q · q · q · q · q · q · q · q","=q<sup>8</sup>","=q<sup>4×2</sup> = q<sup>8</sup>"],h:["A power of 2 means two lots of q⁴.","Expand each q⁴.","Put all the q factors together.","Count the q factors.","For a power of a power, multiply the indices."]},
+  {q:"(b<sup>1</sup>)<sup>5</sup>",l:["=(b<sup>1</sup>)(b<sup>1</sup>)(b<sup>1</sup>)(b<sup>1</sup>)(b<sup>1</sup>)","=(b)(b)(b)(b)(b)","=b · b · b · b · b","=b<sup>5</sup>","=b<sup>1×5</sup> = b<sup>5</sup>"],h:["A power of 5 means five lots of b¹.","Since b¹=b, rewrite each factor.","Put all the b factors together.","Count the b factors.","For a power of a power, multiply the indices."]}
+ ]
+},
+{
+ name:"Zero index",
+ examples:[
+  {q:"a<sup>3</sup> ÷ a<sup>3</sup>",l:["=a<sup>3−3</sup>","=a<sup>0</sup>","But a<sup>3</sup> ÷ a<sup>3</sup> = 1","So a<sup>0</sup> = 1 &nbsp; (a ≠ 0)"],h:["Use the division law.","3 − 3 = 0.","Any non-zero quantity divided by itself is 1.","Therefore a⁰=1 for a≠0."]},
+  {q:"b<sup>5</sup> ÷ b<sup>5</sup>",l:["=b<sup>5−5</sup>","=b<sup>0</sup>","But b<sup>5</sup> ÷ b<sup>5</sup> = 1","So b<sup>0</sup> = 1 &nbsp; (b ≠ 0)"],h:["Use the division law.","5 − 5 = 0.","A non-zero quantity divided by itself is 1.","Therefore b⁰=1."]},
+  {q:"p<sup>2</sup> ÷ p<sup>2</sup>",l:["=p<sup>2−2</sup>","=p<sup>0</sup>","But p<sup>2</sup> ÷ p<sup>2</sup> = 1","So p<sup>0</sup> = 1 &nbsp; (p ≠ 0)"],h:["Use the division law.","2 − 2 = 0.","A non-zero quantity divided by itself is 1.","Therefore p⁰=1."]}
+ ]
+},
+{
+ name:"Negative index",
+ examples:[
+  {q:"a<sup>2</sup> ÷ a<sup>5</sup>",l:["=a<sup>2−5</sup>","=a<sup>−3</sup>",`Also: ${frac("a<sup>2</sup>","a<sup>5</sup>")} = ${frac("1","a<sup>3</sup>")}`,`So a<sup>−3</sup> = ${frac("1","a<sup>3</sup>")}`],h:["Subtract the indices.","2 − 5 = −3.","Cancellation leaves three a factors in the denominator.","A negative index means reciprocal."]},
+  {q:"b<sup>3</sup> ÷ b<sup>6</sup>",l:["=b<sup>3−6</sup>","=b<sup>−3</sup>",`Also: ${frac("b<sup>3</sup>","b<sup>6</sup>")} = ${frac("1","b<sup>3</sup>")}`,`So b<sup>−3</sup> = ${frac("1","b<sup>3</sup>")}`],h:["Subtract the indices.","3 − 6 = −3.","Three b factors remain in the denominator.","A negative index means reciprocal."]},
+  {q:"p<sup>1</sup> ÷ p<sup>4</sup>",l:["=p<sup>1−4</sup>","=p<sup>−3</sup>",`Also: ${frac("p","p<sup>4</sup>")} = ${frac("1","p<sup>3</sup>")}`,`So p<sup>−3</sup> = ${frac("1","p<sup>3</sup>")}`],h:["Subtract the indices.","1 − 4 = −3.","Three p factors remain in the denominator.","A negative index means reciprocal."]}
+ ]
+},
+{
+ name:"Index of 1",
+ examples:[
+  {q:"a<sup>1</sup>",l:["=a"],h:["An index of 1 means one copy of the base."]},
+  {q:"b<sup>1</sup>",l:["=b"],h:["An index of 1 means one copy of the base."]},
+  {q:"p<sup>1</sup>",l:["=p"],h:["An index of 1 means one copy of the base."]}
+ ]
+},
+{
+ name:"Mixed challenge",
+ examples:[
+  {q:"2a<sup>3</sup> × 5a<sup>4</sup> ÷ a<sup>2</sup>",l:["=(2×5)(a<sup>3</sup>×a<sup>4</sup>) ÷ a<sup>2</sup>","=10a<sup>3+4</sup> ÷ a<sup>2</sup>","=10a<sup>7</sup> ÷ a<sup>2</sup>","=10a<sup>7−2</sup>","=10a<sup>5</sup>"],h:["Deal with the number coefficients and the powers separately.","Multiply same bases: add the indices.","Simplify that power.","Now divide same bases: subtract the indices.","Final answer."]},
+  {q:"3b<sup>2</sup> × 2b<sup>5</sup> ÷ b<sup>3</sup>",l:["=(3×2)(b<sup>2</sup>×b<sup>5</sup>) ÷ b<sup>3</sup>","=6b<sup>2+5</sup> ÷ b<sup>3</sup>","=6b<sup>7</sup> ÷ b<sup>3</sup>","=6b<sup>7−3</sup>","=6b<sup>4</sup>"],h:["Deal with the number coefficients and the powers separately.","Multiply same bases: add the indices.","Simplify that power.","Now divide same bases: subtract the indices.","Final answer."]},
+  {q:"(c<sup>2</sup>)<sup>3</sup> × c<sup>4</sup>",l:["=c<sup>2×3</sup> × c<sup>4</sup>","=c<sup>6</sup> × c<sup>4</sup>","=c<sup>6+4</sup>","=c<sup>10</sup>"],h:["Deal with the power of a power first.","Multiply the indices: 2 × 3.","Now multiply same bases: add the indices.","Final answer."]},
+  {q:"12d<sup>7</sup> ÷ 3d<sup>3</sup> × d<sup>2</sup>",l:["=(12÷3)(d<sup>7</sup>÷d<sup>3</sup>) × d<sup>2</sup>","=4d<sup>7−3</sup> × d<sup>2</sup>","=4d<sup>4</sup> × d<sup>2</sup>","=4d<sup>4+2</sup>","=4d<sup>6</sup>"],h:["Simplify the coefficients and the division separately.","Divide same bases: subtract the indices.","Simplify that power.","Now multiply same bases: add the indices.","Final answer."]},
+  {q:"4q<sup>3</sup> × q<sup>2</sup> ÷ q<sup>5</sup>",l:["=4q<sup>3+2</sup> ÷ q<sup>5</sup>","=4q<sup>5</sup> ÷ q<sup>5</sup>","=4q<sup>5−5</sup>","=4q<sup>0</sup>","=4"],h:["Multiply same bases: add the indices.","Simplify that power.","Now divide same bases: subtract the indices.","Use the zero-index rule.","Final answer."]},
+  {q:"5m<sup>2</sup> × (m<sup>3</sup>)<sup>2</sup>",l:["=5m<sup>2</sup> × m<sup>3×2</sup>","=5m<sup>2</sup> × m<sup>6</sup>","=5m<sup>2+6</sup>","=5m<sup>8</sup>"],h:["Deal with the power of a power first.","Multiply the indices: 3 × 2.","Now multiply same bases: add the indices.","Final answer."]},
+  {q:"18p<sup>8</sup> ÷ 3p<sup>4</sup> ÷ p<sup>2</sup>",l:["=(18÷3)(p<sup>8</sup>÷p<sup>4</sup>) ÷ p<sup>2</sup>","=6p<sup>8−4</sup> ÷ p<sup>2</sup>","=6p<sup>4</sup> ÷ p<sup>2</sup>","=6p<sup>4−2</sup>","=6p<sup>2</sup>"],h:["Simplify the coefficients and first division.","Subtract the indices: 8 − 4.","Simplify that power.","Divide again: subtract the indices.","Final answer."]},
+  {q:"2r<sup>3</sup> × 4r<sup>2</sup> × r<sup>5</sup>",l:["=(2×4)(r<sup>3</sup>×r<sup>2</sup>) × r<sup>5</sup>","=8r<sup>3+2</sup> × r<sup>5</sup>","=8r<sup>5</sup> × r<sup>5</sup>","=8r<sup>5+5</sup>","=8r<sup>10</sup>"],h:["Multiply the coefficients and first pair of powers.","Add the first pair of indices.","Simplify that power.","Multiply same bases again: add the indices.","Final answer."]},
+  {q:"6s<sup>4</sup> ÷ 2s<sup>2</sup> × (s<sup>2</sup>)<sup>2</sup>",l:["=(6÷2)(s<sup>4</sup>÷s<sup>2</sup>) × (s<sup>2</sup>)<sup>2</sup>","=3s<sup>4−2</sup> × s<sup>2×2</sup>","=3s<sup>2</sup> × s<sup>4</sup>","=3s<sup>2+4</sup>","=3s<sup>6</sup>"],h:["Simplify the coefficient, division and power separately.","Subtract for division; multiply for power of a power.","Simplify both powers.","Now multiply same bases: add the indices.","Final answer."]},
+  {q:"3t<sup>2</sup> × (t<sup>3</sup>)<sup>2</sup> ÷ t<sup>4</sup>",l:["=3t<sup>2</sup> × t<sup>3×2</sup> ÷ t<sup>4</sup>","=3t<sup>2</sup> × t<sup>6</sup> ÷ t<sup>4</sup>","=3t<sup>2+6</sup> ÷ t<sup>4</sup>","=3t<sup>8</sup> ÷ t<sup>4</sup>","=3t<sup>8−4</sup>","=3t<sup>4</sup>"],h:["Deal with the power of a power first.","Multiply the indices: 3 × 2.","Now multiply same bases: add the indices.","Simplify that power.","Now divide same bases: subtract the indices.","Final answer."]}
+ ]
+}
+];
+
+const intro=document.getElementById("intro");
+const work=document.getElementById("work");
+const ruleName=document.getElementById("ruleName");
+const counter=document.getElementById("counter");
+const question=document.getElementById("question");
+const helper=document.getElementById("helper");
+const tabs=[...document.querySelectorAll(".tab")];
+const lineEls=[0,1,2,3,4,5,6].map(i=>document.getElementById("l"+i));
+const startBtn=document.getElementById("startBtn");
+const resetBtn=document.getElementById("resetBtn");
+const backBtn=document.getElementById("backBtn");
+const nextBtn=document.getElementById("nextBtn");
+const anotherBtn=document.getElementById("anotherBtn");
+
+let ruleIndex=0, exampleIndex=0, revealed=0, started=false;
+
+function item(){return rules[ruleIndex].examples[exampleIndex]}
+function activateTab(){tabs.forEach((t,i)=>t.classList.toggle("active",i===ruleIndex))}
+function loadExample(r,e=0){
+  ruleIndex=r; exampleIndex=e; revealed=0; activateTab();
+  const ex=item(), rule=rules[ruleIndex];
+  ruleName.textContent=rule.name;
+  counter.textContent=`Example ${exampleIndex+1} of ${rule.examples.length}`;
+  question.innerHTML=ex.q;
+  lineEls.forEach((el,i)=>{
+    el.innerHTML=ex.l[i]||"";
+    el.classList.remove("visible","flash","final");
+    if(i===ex.l.length-1) el.classList.add("final");
+  });
+  helper.textContent="Press NEXT to reveal the first line of working.";
+  backBtn.disabled=true;
+  nextBtn.disabled=false;
+  nextBtn.textContent="NEXT ▶";
+  nextBtn.className="control primary";
+  anotherBtn.classList.add("hidden");
+}
+function finish(){
+  nextBtn.textContent="FINISHED ✓";
+  nextBtn.className="control success";
+  nextBtn.disabled=true;
+  if(exampleIndex<rules[ruleIndex].examples.length-1) anotherBtn.classList.remove("hidden");
+}
+startBtn.onclick=()=>{
+  started=true;
+  tabs.forEach(t=>t.disabled=false);
+  intro.style.display="none";
+  work.style.display="grid";
+  startBtn.classList.add("hidden");
+  resetBtn.classList.remove("hidden");
+  backBtn.classList.remove("hidden");
+  nextBtn.classList.remove("hidden");
+  loadExample(0,0);
+};
+tabs.forEach((t,i)=>t.onclick=()=>{if(started)loadExample(i,0)});
+nextBtn.onclick=()=>{
+  const ex=item();
+  if(revealed<ex.l.length){
+    const el=lineEls[revealed];
+    el.classList.add("visible","flash");
+    setTimeout(()=>el.classList.remove("flash"),500);
+    helper.textContent=ex.h[revealed]||"";
+    revealed++;
+    backBtn.disabled=revealed===0;
+    if(revealed===ex.l.length)finish();
+  }
+};
+backBtn.onclick=()=>{
+  if(revealed>0){
+    revealed--;
+    lineEls[revealed].classList.remove("visible","flash");
+    nextBtn.disabled=false;
+    nextBtn.textContent="NEXT ▶";
+    nextBtn.className="control primary";
+    anotherBtn.classList.add("hidden");
+    backBtn.disabled=revealed===0;
+    helper.textContent=revealed===0?"Press NEXT to reveal the first line of working.":(item().h[revealed-1]||"");
+  }
+};
+resetBtn.onclick=()=>loadExample(ruleIndex,exampleIndex);
+anotherBtn.onclick=()=>{
+  if(exampleIndex<rules[ruleIndex].examples.length-1)loadExample(ruleIndex,exampleIndex+1);
+};
+</script>
+</body>
+</html>

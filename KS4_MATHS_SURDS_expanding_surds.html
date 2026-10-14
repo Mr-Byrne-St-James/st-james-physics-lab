@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Expanding Surds – Step by Step</title>
+<style>
+  :root{
+    --bg:#eef2f7;
+    --paper:#fffdf7;
+    --ink:#1c2433;
+    --muted:#697386;
+    --line:#d9d4c7;
+    --accent:#2f67c8;
+    --accent-soft:#eaf1ff;
+    --success:#147a4b;
+    --button:#24324a;
+    --button2:#e7ebf2;
+    --highlight:#fff0b8;
+  }
+
+  *{box-sizing:border-box}
+  html,body{
+    margin:0;
+    width:100%;
+    min-height:100%;
+    background:var(--bg);
+    font-family:Arial, Helvetica, sans-serif;
+    color:var(--ink);
+  }
+
+  body{
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:10px;
+  }
+
+  .app{
+    width:min(960px,100%);
+    height:min(690px, calc(100vh - 20px));
+    min-height:560px;
+    background:white;
+    border:1px solid #d9e0ea;
+    border-radius:18px;
+    box-shadow:0 12px 28px rgba(24,32,51,.10);
+    display:grid;
+    grid-template-rows:auto auto 1fr auto;
+    overflow:hidden;
+  }
+
+  .header{
+    padding:12px 16px 8px;
+    text-align:center;
+    border-bottom:1px solid #e4e8ef;
+  }
+
+  .header h1{
+    margin:0;
+    font-size:clamp(22px,3vw,32px);
+  }
+
+  .header .sub{
+    margin-top:3px;
+    color:var(--muted);
+    font-size:clamp(12px,1.8vw,15px);
+  }
+
+  .tabs{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    padding:9px 12px;
+    border-bottom:1px solid #e4e8ef;
+    background:#fafbfd;
+  }
+
+  .tab{
+    border:1px solid #cfd6e0;
+    background:white;
+    border-radius:11px;
+    min-height:48px;
+    padding:6px 8px;
+    font-weight:700;
+    color:#334155;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+
+  .tab small{
+    display:block;
+    font-weight:600;
+    color:#7a8493;
+    margin-top:2px;
+  }
+
+  .tab.active{
+    border:2px solid var(--accent);
+    background:var(--accent-soft);
+    color:#214e9c;
+  }
+
+  .tab:disabled{
+    opacity:.45;
+    cursor:default;
+  }
+
+  .main{
+    min-height:0;
+    padding:10px 12px;
+  }
+
+  .paper{
+    position:relative;
+    height:100%;
+    min-height:0;
+    border:1px solid #d9d4c7;
+    border-radius:14px;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 43px,
+        rgba(133,153,182,.18) 44px
+      ),
+      var(--paper);
+    box-shadow:inset 36px 0 0 rgba(221,91,91,.07);
+    padding:18px 22px 14px 52px;
+    overflow:hidden;
+  }
+
+  .intro-panel{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:12px;
+  }
+
+  .intro-panel h2{
+    margin:0;
+    font-size:clamp(21px,3vw,30px);
+  }
+
+  .rule{
+    font-size:clamp(24px,4vw,40px);
+    font-weight:800;
+    margin:4px 0;
+  }
+
+  .intro-note{
+    max-width:700px;
+    font-size:clamp(15px,2vw,18px);
+    line-height:1.45;
+  }
+
+  .remember{
+    padding:8px 12px;
+    border-radius:10px;
+    background:#fff7d9;
+    border:1px solid #eed995;
+    font-weight:700;
+    font-size:clamp(16px,2vw,20px);
+  }
+
+  .work-panel{
+    height:100%;
+    display:none;
+    grid-template-rows:auto 1fr auto;
+  }
+
+  .question{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding-bottom:8px;
+    border-bottom:1px dashed #d3cec1;
+  }
+
+  .question-label{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+    font-weight:800;
+  }
+
+  .question-math{
+    font-size:clamp(24px,4vw,38px);
+    font-weight:800;
+    text-align:right;
+  }
+
+  .working{
+    display:grid;
+    grid-template-rows:repeat(5,1fr);
+    min-height:0;
+    padding-top:8px;
+  }
+
+  .line{
+    display:flex;
+    align-items:center;
+    min-height:0;
+    font-family:"Trebuchet MS", Arial, sans-serif;
+    font-size:clamp(21px,3.6vw,34px);
+    font-weight:700;
+    line-height:1.15;
+    opacity:0;
+    transform:translateY(-3px);
+    transition:opacity .22s ease, transform .22s ease, background .45s ease;
+    padding:4px 8px;
+    border-radius:8px;
+  }
+
+  .line.visible{
+    opacity:1;
+    transform:none;
+  }
+
+  .line.flash{
+    background:var(--highlight);
+  }
+
+  .line.final{
+    color:var(--success);
+    font-weight:800;
+  }
+
+  .helper{
+    border-top:1px dashed #d3cec1;
+    padding-top:7px;
+    min-height:32px;
+    font-size:clamp(12px,1.8vw,15px);
+    color:var(--muted);
+  }
+
+  .controls{
+    padding:9px 12px 11px;
+    border-top:1px solid #e4e8ef;
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    background:#fafbfd;
+  }
+
+  button.control{
+    min-height:44px;
+    min-width:108px;
+    padding:8px 14px;
+    border:0;
+    border-radius:10px;
+    font-weight:800;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+
+  .primary{background:var(--accent);color:white}
+  .secondary{background:var(--button2);color:#253247}
+  .dark{background:var(--button);color:white}
+  .success{background:var(--success);color:white}
+  button.control:disabled{opacity:.4;cursor:default}
+
+  .hidden{display:none !important}
+
+  @media (max-width:720px){
+    body{padding:6px}
+    .app{
+      height:min(650px, calc(100vh - 12px));
+      min-height:520px;
+      border-radius:14px;
+    }
+    .header{padding:9px 10px 6px}
+    .tabs{gap:5px;padding:7px}
+    .tab{font-size:13px;padding:5px;min-height:46px}
+    .paper{padding:14px 12px 10px 40px}
+    .question{align-items:flex-start}
+    .question-math{font-size:clamp(21px,5vw,30px)}
+    .line{font-size:clamp(19px,4.8vw,28px)}
+    .controls{padding:7px}
+    button.control{min-width:90px;padding:7px 10px}
+  }
+
+  @media (max-width:430px){
+    .header .sub{display:none}
+    .tab small{display:none}
+    .app{
+      height:calc(100vh - 12px);
+      min-height:500px;
+    }
+    .paper{padding-left:34px}
+    .working{grid-template-rows:repeat(5,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1>Expanding Brackets with Surds</h1>
+    <div class="sub">Watch the solution build up line by line.</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" data-example="0" disabled>
+      1. Start here
+      <small>√3(2 + √3)</small>
+    </button>
+    <button class="tab" data-example="1" disabled>
+      2. Getting harder
+      <small>2√5(3 + √5)</small>
+    </button>
+    <button class="tab" data-example="2" disabled>
+      3. Challenge
+      <small>√2(3 + 2√2)</small>
+    </button>
+  </div>
+
+  <div class="main">
+    <div class="paper">
+
+      <div id="introPanel" class="intro-panel">
+        <h2>The rule</h2>
+        <div class="rule">a(b + c) = ab + ac</div>
+        <div class="intro-note">
+          Multiply the term outside the bracket by <strong>every term inside</strong>.
+        </div>
+        <div class="rule" style="font-size:clamp(22px,3vw,32px);">√a × √a = a</div>
+        <div class="remember">Example: √3 × √3 = 3</div>
+      </div>
+
+      <div id="workPanel" class="work-panel">
+        <div class="question">
+          <div>
+            <div class="question-label">Question</div>
+          </div>
+          <div id="questionMath" class="question-math"></div>
+        </div>
+
+        <div id="working" class="working">
+          <div class="line" id="line0"></div>
+          <div class="line" id="line1"></div>
+          <div class="line" id="line2"></div>
+          <div class="line" id="line3"></div>
+          <div class="line final" id="line4"></div>
+        </div>
+
+        <div id="helper" class="helper">Press NEXT to reveal the first line of working.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="startBtn" class="control primary">START</button>
+
+    <button id="resetBtn" class="control secondary hidden">RESET</button>
+    <button id="backBtn" class="control secondary hidden">◀ BACK</button>
+    <button id="nextBtn" class="control primary hidden">NEXT ▶</button>
+  </div>
+
+</div>
+
+<script>
+const examples = [
+  {
+    question: "√3(2 + √3)",
+    lines: [
+      "= √3 × 2 + √3 × √3",
+      "= 2√3 + 3",
+      "= 3 + 2√3",
+      "",
+      ""
+    ],
+    helpers: [
+      "Multiply √3 by both terms inside the bracket.",
+      "Now simplify each multiplication.",
+      "Final simplified answer.",
+      "",
+      ""
+    ],
+    visibleCount: 3
+  },
+  {
+    question: "2√5(3 + √5)",
+    lines: [
+      "= 2√5 × 3 + 2√5 × √5",
+      "= 6√5 + 2 × 5",
+      "= 6√5 + 10",
+      "= 10 + 6√5",
+      ""
+    ],
+    helpers: [
+      "Multiply 2√5 by both terms inside the bracket.",
+      "Use √5 × √5 = 5.",
+      "Simplify the number term.",
+      "Final simplified answer.",
+      ""
+    ],
+    visibleCount: 4
+  },
+  {
+    question: "√2(3 + 2√2)",
+    lines: [
+      "= √2 × 3 + √2 × 2√2",
+      "= 3√2 + 2 × √2 × √2",
+      "= 3√2 + 2 × 2",
+      "= 3√2 + 4",
+      "= 4 + 3√2"
+    ],
+    helpers: [
+      "Multiply √2 by both terms inside the bracket.",
+      "Write the second product so the surd multiplication is clear.",
+      "Use √2 × √2 = 2.",
+      "Simplify the number term.",
+      "Final simplified answer."
+    ],
+    visibleCount: 5
+  }
+];
+
+const introPanel = document.getElementById("introPanel");
+const workPanel = document.getElementById("workPanel");
+const questionMath = document.getElementById("questionMath");
+const helper = document.getElementById("helper");
+
+const startBtn = document.getElementById("startBtn");
+const resetBtn = document.getElementById("resetBtn");
+const backBtn = document.getElementById("backBtn");
+const nextBtn = document.getElementById("nextBtn");
+const tabs = [...document.querySelectorAll(".tab")];
+const lines = [0,1,2,3,4].map(i => document.getElementById("line"+i));
+
+let currentExample = 0;
+let revealed = 0;
+let started = false;
+
+function enableTabs(){
+  tabs.forEach(t => t.disabled = false);
+}
+
+function setActiveTab(){
+  tabs.forEach((t,i)=>t.classList.toggle("active", i===currentExample));
+}
+
+function loadExample(index){
+  currentExample = index;
+  revealed = 0;
+  setActiveTab();
+
+  const ex = examples[currentExample];
+  questionMath.textContent = ex.question;
+
+  lines.forEach((line,i)=>{
+    line.textContent = ex.lines[i] || "";
+    line.classList.remove("visible","flash");
+    line.classList.toggle("final", i === ex.visibleCount-1);
+  });
+
+  helper.textContent = "Press NEXT to reveal the first line of working.";
+  backBtn.disabled = true;
+  nextBtn.disabled = false;
+  nextBtn.textContent = "NEXT ▶";
+  nextBtn.className = "control primary";
+}
+
+function showWorking(){
+  introPanel.style.display = "none";
+  workPanel.style.display = "grid";
+}
+
+function flashLine(index){
+  const line = lines[index];
+  line.classList.add("flash");
+  setTimeout(()=>line.classList.remove("flash"), 550);
+}
+
+startBtn.addEventListener("click", ()=>{
+  started = true;
+  enableTabs();
+  showWorking();
+  loadExample(0);
+
+  startBtn.classList.add("hidden");
+  resetBtn.classList.remove("hidden");
+  backBtn.classList.remove("hidden");
+  nextBtn.classList.remove("hidden");
+});
+
+tabs.forEach((tab,i)=>{
+  tab.addEventListener("click", ()=>{
+    if(!started) return;
+    loadExample(i);
+  });
+});
+
+nextBtn.addEventListener("click", ()=>{
+  const ex = examples[currentExample];
+  if(revealed < ex.visibleCount){
+    lines[revealed].classList.add("visible");
+    flashLine(revealed);
+    helper.textContent = ex.helpers[revealed] || "";
+    revealed++;
+    backBtn.disabled = revealed === 0;
+
+    if(revealed === ex.visibleCount){
+      nextBtn.textContent = "FINISHED ✓";
+      nextBtn.className = "control success";
+      nextBtn.disabled = true;
+    }
+  }
+});
+
+backBtn.addEventListener("click", ()=>{
+  if(revealed > 0){
+    revealed--;
+    lines[revealed].classList.remove("visible","flash");
+    nextBtn.disabled = false;
+    nextBtn.textContent = "NEXT ▶";
+    nextBtn.className = "control primary";
+    backBtn.disabled = revealed === 0;
+
+    helper.textContent = revealed === 0
+      ? "Press NEXT to reveal the first line of working."
+      : examples[currentExample].helpers[revealed-1];
+  }
+});
+
+resetBtn.addEventListener("click", ()=>{
+  loadExample(currentExample);
+});
+</script>
+</body>
+</html>
