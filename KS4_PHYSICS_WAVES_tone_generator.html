@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>St James Physics Lab | Tone Generator</title>
+<style>
+:root{
+  --bg:#f4f6f8;
+  --panel:#ffffff;
+  --ink:#17202a;
+  --muted:#66737f;
+  --border:#d7dde3;
+  --accent:#2d6cdf;
+  --accent-dark:#173f73;
+  --scope:#07130d;
+  --grid:#204a36;
+  --trace:#9cff9c;
+  --danger:#b42318;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  min-height:100%;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+}
+body{padding:10px}
+.app{max-width:1120px;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:10px}
+.titleWrap h1{margin:0;font-size:clamp(24px,3vw,34px)}
+.subtitle{margin-top:3px;color:var(--muted);font-size:13px}
+.brand{display:flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:6px 9px;font-size:12px;font-weight:900;line-height:1.05;white-space:nowrap}
+.brand svg{width:30px;height:30px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.07)}
+.controls{display:grid;grid-template-columns:1.25fr 1fr 1fr auto;gap:12px;padding:14px;align-items:stretch}
+.block{border:1px solid var(--border);border-radius:12px;padding:11px;min-width:0}
+.blockTitle{font-size:12px;color:var(--muted);font-weight:900;letter-spacing:.3px;margin-bottom:8px}
+.readout{font-size:clamp(24px,3vw,36px);font-weight:900;color:var(--accent-dark);line-height:1}
+.smallReadout{font-size:12px;color:var(--muted);margin-top:5px;min-height:16px}
+.sliderRow{display:grid;grid-template-columns:1fr;gap:7px;margin-top:9px}
+input[type="range"]{width:100%;accent-color:var(--accent);min-height:34px;touch-action:none}
+.ticks{display:flex;justify-content:space-between;gap:4px;font-size:10px;color:var(--muted);user-select:none}
+.inputRow{display:flex;align-items:center;gap:7px;margin-top:8px}
+.inputRow input[type="number"]{width:120px;max-width:100%;padding:9px 10px;border:1px solid #bfc9d4;border-radius:9px;font-size:17px;font-weight:800}
+.unit{font-weight:800;color:var(--muted)}
+.waveButtons{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}
+.waveBtn,.actionBtn{border:2px solid #b9c4d3;background:#fff;color:var(--accent-dark);border-radius:11px;font-weight:900;cursor:pointer;min-height:46px;padding:8px 10px;touch-action:manipulation}
+.waveBtn.active{background:#eaf1ff;border-color:var(--accent);color:#174d9b}
+.actionArea{display:grid;grid-template-rows:1fr 1fr;gap:10px;min-width:150px}
+.actionBtn.play{background:#18882d;color:#fff;border-color:#147324;font-size:17px}
+.actionBtn.pause{background:#d97706;color:#fff;border-color:#b96305}
+.actionBtn.reset{background:#fff}
+.scopePanel{margin-top:12px;padding:12px}
+.scopeHeader{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+.scopeTitle{font-weight:900;color:var(--accent-dark)}
+.scopeNote{color:var(--muted);font-size:12px}
+.scope{width:100%;height:230px;display:block;background:var(--scope);border-radius:12px;border:2px solid #1d3125}
+.safety{margin-top:10px;border:1px solid #f2c6c2;background:#fff7f6;color:#7a271a;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:700;text-align:center}
+@media(max-width:900px){.controls{grid-template-columns:1fr 1fr}.actionArea{grid-template-columns:1fr 1fr;grid-template-rows:none;grid-column:1/-1}}
+@media(max-width:620px){body{padding:6px}.topbar{align-items:flex-start}.brand{font-size:10px}.controls{grid-template-columns:1fr}.actionArea{grid-template-columns:1fr 1fr}.scope{height:190px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="topbar">
+    <div class="titleWrap">
+      <h1>Tone Generator</h1>
+      <div class="subtitle">Frequency, amplitude and waveform</div>
+    </div>
+    <div class="brand" aria-label="St James Physics Lab">
+      <svg viewBox="0 0 60 60" aria-hidden="true">
+        <path d="M30 8 C22 18 14 25 8 43 C20 48 40 48 52 43 C46 25 38 18 30 8Z" fill="#f2c24e" stroke="#173f73" stroke-width="3"/>
+        <path d="M30 12V46M30 15L17 44M30 15L43 44M30 17L11 40M30 17L49 40" fill="none" stroke="#173f73" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <span>St James<br>Physics Lab</span>
+    </div>
+  </div>
+
+  <section class="panel controls">
+    <div class="block">
+      <div class="blockTitle">FREQUENCY</div>
+      <div class="readout"><span id="freqDisplay">440</span> Hz</div>
+      <div id="khzDisplay" class="smallReadout"></div>
+      <div class="sliderRow">
+        <input id="freqSlider" type="range" min="0" max="1000" step="1" value="447" aria-label="Frequency">
+        <div class="ticks"><span>20</span><span>100</span><span>500</span><span>1k</span><span>5k</span><span>10k</span><span>20k</span></div>
+      </div>
+      <div class="inputRow">
+        <input id="freqInput" type="number" min="20" max="20000" step="1" value="440" inputmode="numeric" aria-label="Frequency in hertz">
+        <span class="unit">Hz</span>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="blockTitle">AMPLITUDE</div>
+      <div class="readout"><span id="ampDisplay">50</span>%</div>
+      <div class="smallReadout">Controls output level and waveform height</div>
+      <div class="sliderRow">
+        <input id="ampSlider" type="range" min="0" max="100" step="1" value="50" aria-label="Amplitude">
+        <div class="ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100%</span></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="blockTitle">WAVEFORM</div>
+      <div class="readout" id="waveReadout">Sine</div>
+      <div class="smallReadout">Select the signal shape</div>
+      <div class="waveButtons">
+        <button class="waveBtn active" data-wave="sine" type="button">SINE</button>
+        <button class="waveBtn" data-wave="square" type="button">SQUARE</button>
+        <button class="waveBtn" data-wave="triangle" type="button">TRIANGLE</button>
+      </div>
+    </div>
+
+    <div class="actionArea">
+      <button id="playBtn" class="actionBtn play" type="button">PLAY TONE</button>
+      <button id="resetBtn" class="actionBtn reset" type="button">RESET</button>
+    </div>
+  </section>
+
+  <section class="panel scopePanel">
+    <div class="scopeHeader">
+      <div class="scopeTitle">WAVEFORM DISPLAY</div>
+      <div class="scopeNote">Illustrative display — not calibrated</div>
+    </div>
+    <canvas id="scope" class="scope"></canvas>
+  </section>
+  <div class="safety">Keep headphone or device volume at a sensible level. Sound never starts automatically.</div>
+</main>
+
+<script>
+(() => {
+  const MIN_F = 20, MAX_F = 20000, DEFAULT_F = 440, DEFAULT_A = 50, MAX_OUTPUT_GAIN = 0.18;
+  const freqSlider=document.getElementById('freqSlider'),freqInput=document.getElementById('freqInput'),freqDisplay=document.getElementById('freqDisplay'),khzDisplay=document.getElementById('khzDisplay'),ampSlider=document.getElementById('ampSlider'),ampDisplay=document.getElementById('ampDisplay'),waveReadout=document.getElementById('waveReadout'),waveBtns=[...document.querySelectorAll('.waveBtn')],playBtn=document.getElementById('playBtn'),resetBtn=document.getElementById('resetBtn'),canvas=document.getElementById('scope'),ctx2d=canvas.getContext('2d');
+  let frequency=DEFAULT_F,amplitude=DEFAULT_A,wave='sine',audioCtx=null,oscillator=null,gainNode=null,playing=false;
+  const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
+  const sliderToFreq=v=>MIN_F*Math.pow(MAX_F/MIN_F,Number(v)/1000);
+  const freqToSlider=f=>Math.round(clamp(Math.log(f/MIN_F)/Math.log(MAX_F/MIN_F),0,1)*1000);
+  const formatHz=f=>Math.round(f).toLocaleString('en-GB');
+
+  function updateFrequencyUI(){
+    freqDisplay.textContent=formatHz(frequency);freqInput.value=Math.round(frequency);freqSlider.value=freqToSlider(frequency);
+    khzDisplay.textContent=frequency>=1000?`${(frequency/1000).toFixed(frequency>=10000?1:2)} kHz`:'';
+    if(oscillator&&audioCtx)oscillator.frequency.setTargetAtTime(frequency,audioCtx.currentTime,0.01);
+    drawWave();
+  }
+  function updateAmplitudeUI(){
+    ampDisplay.textContent=amplitude;ampSlider.value=amplitude;
+    if(gainNode&&audioCtx){const target=playing?(amplitude/100)*MAX_OUTPUT_GAIN:0;gainNode.gain.setTargetAtTime(target,audioCtx.currentTime,0.02)}
+    drawWave();
+  }
+  function updateWaveUI(){
+    waveReadout.textContent=wave.charAt(0).toUpperCase()+wave.slice(1);waveBtns.forEach(btn=>btn.classList.toggle('active',btn.dataset.wave===wave));if(oscillator)oscillator.type=wave;drawWave();
+  }
+  function ensureAudio(){
+    if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(!oscillator){oscillator=audioCtx.createOscillator();gainNode=audioCtx.createGain();oscillator.type=wave;oscillator.frequency.value=frequency;gainNode.gain.value=0;oscillator.connect(gainNode);gainNode.connect(audioCtx.destination);oscillator.start()}
+  }
+  async function setPlaying(next){
+    ensureAudio();if(audioCtx.state==='suspended')await audioCtx.resume();playing=next;const now=audioCtx.currentTime;gainNode.gain.cancelScheduledValues(now);gainNode.gain.setValueAtTime(gainNode.gain.value,now);const target=playing?(amplitude/100)*MAX_OUTPUT_GAIN:0;gainNode.gain.linearRampToValueAtTime(target,now+0.04);playBtn.textContent=playing?'PAUSE':'PLAY TONE';playBtn.classList.toggle('pause',playing);playBtn.classList.toggle('play',!playing);
+  }
+  function reset(){frequency=DEFAULT_F;amplitude=DEFAULT_A;wave='sine';if(playing)setPlaying(false);updateFrequencyUI();updateAmplitudeUI();updateWaveUI()}
+  function resizeCanvas(){const dpr=Math.max(1,window.devicePixelRatio||1),rect=canvas.getBoundingClientRect();canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);ctx2d.setTransform(dpr,0,0,dpr,0,0);drawWave()}
+  function drawGrid(w,h){ctx2d.clearRect(0,0,w,h);ctx2d.fillStyle='#07130d';ctx2d.fillRect(0,0,w,h);ctx2d.lineWidth=1;ctx2d.strokeStyle='#204a36';for(let x=0;x<=w;x+=w/10){ctx2d.beginPath();ctx2d.moveTo(x,0);ctx2d.lineTo(x,h);ctx2d.stroke()}for(let y=0;y<=h;y+=h/8){ctx2d.beginPath();ctx2d.moveTo(0,y);ctx2d.lineTo(w,y);ctx2d.stroke()}ctx2d.strokeStyle='#3b7659';ctx2d.lineWidth=1.5;ctx2d.beginPath();ctx2d.moveTo(0,h/2);ctx2d.lineTo(w,h/2);ctx2d.stroke()}
+  function waveValue(phase){const p=phase%(2*Math.PI);if(wave==='square')return Math.sin(p)>=0?1:-1;if(wave==='triangle')return(2/Math.PI)*Math.asin(Math.sin(p));return Math.sin(p)}
+  function drawWave(){const rect=canvas.getBoundingClientRect(),w=rect.width,h=rect.height;if(!w||!h)return;drawGrid(w,h);const logPos=clamp(Math.log10(frequency/MIN_F)/Math.log10(MAX_F/MIN_F),0,1),cycles=1.5+logPos*10.5,ampPx=(h*.34)*(amplitude/100);ctx2d.strokeStyle='#9cff9c';ctx2d.lineWidth=3;ctx2d.lineJoin='round';ctx2d.lineCap='round';ctx2d.beginPath();for(let x=0;x<=w;x++){const phase=(x/w)*cycles*Math.PI*2,y=h/2-waveValue(phase)*ampPx;if(x===0)ctx2d.moveTo(x,y);else ctx2d.lineTo(x,y)}ctx2d.stroke()}
+  freqSlider.addEventListener('input',e=>{frequency=sliderToFreq(e.target.value);updateFrequencyUI()});
+  freqInput.addEventListener('input',e=>{const raw=Number(e.target.value);if(Number.isFinite(raw)){frequency=clamp(raw,MIN_F,MAX_F);updateFrequencyUI()}});
+  freqInput.addEventListener('change',()=>{frequency=clamp(Number(freqInput.value)||DEFAULT_F,MIN_F,MAX_F);updateFrequencyUI()});
+  ampSlider.addEventListener('input',e=>{amplitude=Number(e.target.value);updateAmplitudeUI()});
+  waveBtns.forEach(btn=>btn.addEventListener('click',()=>{wave=btn.dataset.wave;updateWaveUI()}));
+  playBtn.addEventListener('click',()=>setPlaying(!playing));resetBtn.addEventListener('click',reset);window.addEventListener('resize',resizeCanvas);
+  freqSlider.value=freqToSlider(DEFAULT_F);updateFrequencyUI();updateAmplitudeUI();updateWaveUI();resizeCanvas();
+})();
+</script>
+</body>
+</html>
