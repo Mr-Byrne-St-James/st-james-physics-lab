@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>St James Physics Lab — Ripple Tank</title>
+<style>
+:root{
+  --bg:#eef4f7; --panel:#fff; --ink:#17324a; --muted:#607789;
+  --accent:#1477a8; --tankA:#ccecf2; --tankB:#9fd8e4; --barrier:#334a57;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+button,input{font:inherit}
+button{border:0;border-radius:9px;min-height:40px;padding:6px 10px;font-weight:760;background:#e4edf2;color:var(--ink);touch-action:manipulation}
+button.primary{background:var(--accent);color:white}
+button[aria-pressed="true"]{background:#d8edf7;color:#0d5f87;box-shadow:inset 0 0 0 1px #8bbbd2}
+.hidden{display:none!important}
+.screen{min-height:100dvh}
+#intro{display:grid;place-items:center;padding:18px;background:linear-gradient(#dfeaf0,#f7fafb)}
+.introCard{width:min(100%,980px);background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 16px 48px #2343}
+.brandIntro{text-align:center;font-size:12px;font-weight:850;letter-spacing:.16em;color:#476979;padding-top:15px}
+.introHead{text-align:center;padding:5px 18px 8px}
+.introHead h1{margin:0;font-size:clamp(28px,5vw,46px)}
+.introHead p{margin:.35rem 0;color:var(--muted)}
+.bench{position:relative;height:min(52vh,450px);min-height:300px;background:linear-gradient(#d9edf4 0 58%,#b77d50 58% 66%,#805438 66%);overflow:hidden}
+.rig{position:absolute;left:50%;top:48%;width:min(72vw,620px);height:min(30vw,245px);transform:translate(-50%,-50%) perspective(700px) rotateX(57deg)}
+.tank3d{position:absolute;inset:0;border:14px solid #9ab3bd;border-radius:14px;background:#a9dfeb;box-shadow:0 18px 20px #0004;overflow:hidden}
+.dipper3d{position:absolute;left:7%;top:8%;bottom:8%;width:12px;border-radius:8px;background:#273e4c;z-index:3;animation:dip .34s ease-in-out infinite alternate}
+.wave3d{position:absolute;left:11%;top:10%;bottom:10%;width:3px;background:#fff9;box-shadow:25px 0 #fff9,50px 0 #fff9,75px 0 #fff9,100px 0 #fff9,125px 0 #fff9,150px 0 #fff9,175px 0 #fff9,200px 0 #fff9,225px 0 #fff9,250px 0 #fff9,275px 0 #fff9,300px 0 #fff9;animation:drift 1.4s linear infinite}
+@keyframes dip{to{transform:translateX(5px)}} @keyframes drift{to{transform:translateX(25px)}}
+.label{position:absolute;background:#fff;border:2px solid #8aa7b7;border-radius:9px;padding:5px 9px;font-weight:750;box-shadow:0 3px 8px #0002}
+.labDipper{left:7%;top:19%}.labWater{right:10%;top:32%}.labScreen{left:40%;bottom:11%}
+.enterWrap{text-align:center;padding:15px 18px 20px}.enterWrap button{font-size:18px;padding-inline:26px}
+#app{padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+.topbar{display:flex;align-items:center;gap:10px;max-width:1250px;margin:0 auto 7px}
+.titleWrap{flex:1;min-width:0;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.topbar h1{margin:0;font-size:clamp(20px,3vw,31px)}
+.brand{font-size:11px;font-weight:900;letter-spacing:.14em;color:#547382;white-space:nowrap}
+.topbar button{min-height:38px;font-size:12px}
+.wrap{max-width:1250px;margin:auto}
+.tankPanel{background:#fff;border-radius:15px;padding:7px;box-shadow:0 4px 18px #2342}
+.canvasWrap{position:relative;width:100%;aspect-ratio:1.55/1;border-radius:10px;overflow:hidden;background:var(--tankA);border:2px solid #789ba9}
+canvas{display:block;width:100%;height:100%;touch-action:pan-y}
+.tankBadge{position:absolute;left:8px;top:8px;background:#ffffffdc;border-radius:7px;padding:4px 7px;font-size:12px;font-weight:800;pointer-events:none}
+.modelBadge{position:absolute;left:8px;bottom:8px;background:#ffffffc8;border-radius:7px;padding:3px 6px;font-size:10px;font-weight:700;color:#47606e;pointer-events:none}
+.tankOverlay{position:absolute;right:10px;top:10px;width:min(215px,30%);background:#ffffffd9;border:1px solid #91aab6;border-radius:9px;padding:5px 7px;z-index:5;backdrop-filter:blur(3px);font-size:11px}
+.tankOverlay .ovRow{display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 6px;margin-bottom:2px}
+.tankOverlay .ovRow:last-child{margin-bottom:0}
+.tankOverlay span{font-weight:800}.tankOverlay b{color:var(--accent);font-size:11px}
+.tankOverlay input[type=range]{grid-column:1/-1;width:100%;height:24px;margin:0;accent-color:var(--accent)}
+.toolbar{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:6px;background:#fff;border-radius:10px;padding:4px 5px;box-shadow:0 3px 10px #2341}
+.toolToggle{display:flex;align-items:center;gap:4px;min-height:38px;padding:2px 5px;border-radius:7px;font-size:12px;font-weight:750;white-space:nowrap}
+.toolToggle input{width:19px;height:19px;margin:0;accent-color:var(--accent)}
+.viewButton,.actions button{font-size:11px;min-height:38px;padding:4px 8px}
+.dragHint{font-size:10px;color:var(--muted);white-space:nowrap}
+.spacer{flex:1}
+.angleBox{display:flex;align-items:center;gap:4px;min-height:38px;font-size:11px;font-weight:750}
+.angleBox input{width:92px;height:27px;accent-color:var(--accent)}
+.actions{display:flex;gap:4px}
+.readout{display:flex;justify-content:center;gap:clamp(10px,3vw,32px);flex-wrap:wrap;padding:6px 6px 1px;font-size:12px;font-weight:750}
+.readout strong{color:var(--accent)}
+@media(max-width:760px){
+  .canvasWrap{aspect-ratio:1.27/1}
+  .tankOverlay{right:7px;top:7px;width:38%}
+  .toolbar{gap:2px}.toolToggle{font-size:11px;padding-inline:3px}
+  .spacer{display:none}.dragHint{width:100%;order:10;margin-left:3px}
+  .angleBox{order:8}.actions{margin-left:auto}
+}
+@media(max-width:470px){
+  #app{padding:5px}.tankPanel{padding:4px}.canvasWrap{aspect-ratio:1.06/1}
+  .tankOverlay{width:45%;padding:4px 5px}.tankOverlay input[type=range]{height:22px}
+  .actions{width:100%}.actions button{flex:1}.readout{gap:7px 13px;font-size:11px}
+  .brand{font-size:9px}
+}
+</style>
+</head>
+<body>
+<section id="intro" class="screen">
+  <div class="introCard">
+    <div class="brandIntro">ST JAMES PHYSICS LAB</div>
+    <div class="introHead">
+      <h1>Interactive Ripple Tank</h1>
+      <p>Investigate wave speed, diffraction and reflection.</p>
+    </div>
+    <div class="bench">
+      <div class="rig"><div class="tank3d"><div class="dipper3d"></div><div class="wave3d"></div></div></div>
+      <div class="label labDipper">Dipper</div>
+      <div class="label labWater">Water</div>
+      <div class="label labScreen">Screen / paper below</div>
+    </div>
+    <div class="enterWrap"><button id="enter" class="primary">ENTER RIPPLE TANK</button></div>
+  </div>
+</section>
+<section id="app" class="screen hidden">
+  <div class="topbar">
+    <div class="titleWrap"><h1>Ripple Tank — Overhead View</h1><span class="brand">ST JAMES PHYSICS LAB</span></div>
+    <button id="apparatus">APPARATUS VIEW</button>
+  </div>
+  <div class="wrap">
+    <div class="tankPanel">
+      <div class="canvasWrap">
+        <canvas id="tank" aria-label="Interactive ripple tank viewed from above"></canvas>
+        <div class="tankBadge">Top view</div>
+        <div class="modelBadge">Analytic waves • Huygens diffraction</div>
+        <div class="tankOverlay">
+          <div class="ovRow"><span>Frequency</span><b id="freqVal">5.0 Hz</b><input id="freq" type="range" min="2" max="10" value="5" step=".1" aria-label="Frequency"></div>
+          <div class="ovRow"><span>Depth</span><b id="depthVal">Medium</b><input id="depth" type="range" min="0" max="100" value="50" step="1" aria-label="Water depth"></div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <label class="toolToggle"><input id="diffOn" type="checkbox">Diffraction</label>
+        <label class="toolToggle"><input id="reflectOn" type="checkbox">Reflection</label>
+        <button id="viewMode" class="viewButton" type="button" aria-pressed="false">View: Ripple</button>
+        <label class="toolToggle"><input id="showLambda" type="checkbox">λ</label>
+        <label class="toolToggle"><input id="showRuler" type="checkbox">Ruler</label>
+        <label class="toolToggle"><input id="showDirection" type="checkbox">Direction</label>
+        <span id="dragHint" class="dragHint hidden">Drag barrier ↔ • handles resize gap symmetrically</span>
+        <span class="spacer"></span>
+        <div id="angleBox" class="angleBox hidden"><span>Angle</span><input id="angle" type="range" min="-42" max="42" value="25" step="1" aria-label="Reflecting barrier angle"><b id="angleVal">25°</b></div>
+        <div class="actions"><button id="start" class="primary">START</button><button id="pause">PAUSE</button><button id="reset">RESET</button></div>
+      </div>
+      <div class="readout"><span>f = <strong id="rF">5.0 Hz</strong></span><span>λ = <strong id="rL">4.0 cm</strong></span><span>v = <strong id="rV">20.0 cm/s</strong></span><span>v = fλ</span></div>
+    </div>
+  </div>
+</section>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const intro=$('intro'),app=$('app'),canvas=$('tank'),ctx=canvas.getContext('2d');
+const freq=$('freq'),depth=$('depth'),angle=$('angle');
+const diffOn=$('diffOn'),reflectOn=$('reflectOn'),viewMode=$('viewMode');
+let running=false, displayMode='ripple', phase=0, lastTime=performance.now();
+let barrierXFrac=.58, gapHalfFrac=.10;
+let dragMode=null, dragStartX=0, dragStartBarrier=.58;
+const GW=220, GH=142;
+const off=document.createElement('canvas');off.width=GW;off.height=GH;
+const octx=off.getContext('2d');
+const img=octx.createImageData(GW,GH), pix=img.data;
+let dRe=new Float32Array(GW*GH), dIm=new Float32Array(GW*GH), dAmp=new Float32Array(GW*GH);
+let diffractionDirty=true;
+function physics(){const f=+freq.value,d=+depth.value;const v=14+d*.12;const lambda=v/f;return {f,d,v,lambda}}
+function dims(){const r=canvas.getBoundingClientRect();return {w:r.width,h:r.height}}
+function resize(){const r=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);diffractionDirty=true}
+new ResizeObserver(resize).observe(canvas);
+function updateUI(){const p=physics();$('freqVal').textContent=p.f.toFixed(1)+' Hz';$('depthVal').textContent=p.d<34?'Shallow':p.d>66?'Deep':'Medium';$('rF').textContent=p.f.toFixed(1)+' Hz';$('rL').textContent=p.lambda.toFixed(1)+' cm';$('rV').textContent=p.v.toFixed(1)+' cm/s';$('angleVal').textContent=angle.value+'°';$('dragHint').classList.toggle('hidden',!diffOn.checked);$('angleBox').classList.toggle('hidden',!reflectOn.checked);viewMode.textContent=displayMode==='ripple'?'View: Ripple':'View: Wavefronts';viewMode.setAttribute('aria-pressed',displayMode==='wavefronts'?'true':'false')}
+function waveScale(w){const dipX=w*.075;return {dipX,pxPerCm:(w-dipX)*.92/30}}
+function rebuildDiffraction(){dRe.fill(0);dIm.fill(0);dAmp.fill(0);if(!diffOn.checked){diffractionDirty=false;return}const p=physics();const bx=GW*barrierXFrac;const cy=GH*.5;const gapPx=Math.max(0,GH*gapHalfFrac*2);if(gapPx<1){diffractionDirty=false;return}const visibleW=dims().w||1000;const scale=waveScale(visibleW);const lambdaCanvas=p.lambda*scale.pxPerCm;const lambdaGrid=lambdaCanvas*(GW/visibleW);const k=2*Math.PI/Math.max(4,lambdaGrid);const nsrc=Math.max(10,Math.min(72,Math.round(gapPx/2.4)));const y0=cy-gapPx/2,y1=cy+gapPx/2;const ds=gapPx/Math.max(1,nsrc-1);const weight=ds/Math.max(lambdaGrid,1);const ys=[];for(let n=0;n<nsrc;n++)ys.push(y0+n*ds);for(let gy=0;gy<GH;gy++){for(let gx=Math.ceil(bx)+1;gx<GW;gx++){let re=0,im=0;const dx=gx-bx;for(let n=0;n<ys.length;n++){const dy=gy-ys[n];const r=Math.sqrt(dx*dx+dy*dy);const spread=1/Math.sqrt(Math.max(.65,r/Math.max(lambdaGrid,1)));const ph=k*r;re+=weight*spread*Math.cos(ph);im+=weight*spread*Math.sin(ph)}const i=gy*GW+gx;const amp=Math.hypot(re,im);const cap=2.4;if(amp>cap){re*=cap/amp;im*=cap/amp}dRe[i]=re;dIm[i]=im;dAmp[i]=Math.hypot(re,im)}}diffractionDirty=false}
+function planeField(x,p,k,omegaT){return Math.cos(k*x-omegaT)}
+function reflectionField(x,y,w,h,p,k,omegaT){const a=(+angle.value)*Math.PI/180;const cx=w*.72,cy=h*.50;const nx=Math.cos(a),ny=-Math.sin(a);const dot=nx;const rx=1-2*dot*nx, ry=-2*dot*ny;const phi=(1-rx)*cx - ry*cy;const incident=Math.cos(k*x-omegaT);const reflected=Math.cos(k*(rx*x+ry*y)+k*phi-omegaT);const side=(x-cx)*nx+(y-cy)*ny;return side<=0 ? .56*(incident+reflected) : 0}
+function barrierSide(x,y,w,h){const a=(+angle.value)*Math.PI/180,cx=w*.72,cy=h*.50;const nx=Math.cos(a),ny=-Math.sin(a);return (x-cx)*nx+(y-cy)*ny}
+function renderRipple(){const {w,h}=dims(),p=physics(),scale=waveScale(w);const lambdaPx=p.lambda*scale.pxPerCm;const k=2*Math.PI/Math.max(8,lambdaPx);const omegaT=phase;if(diffractionDirty)rebuildDiffraction();let n=0;for(let gy=0;gy<GH;gy++){const y=gy/(GH-1)*h;for(let gx=0;gx<GW;gx++,n++){const x=gx/(GW-1)*w;let val=0;if(diffOn.checked){const bx=w*barrierXFrac;if(x<scale.dipX) val=0;else if(x<=bx) val=planeField(x-scale.dipX,p,k,omegaT);else{const re=dRe[n],im=dIm[n];val=re*Math.cos(omegaT)+im*Math.sin(omegaT)}}else if(reflectOn.checked){val=x<scale.dipX?0:reflectionField(x,y,w,h,p,k,omegaT)}else{val=x<scale.dipX?0:planeField(x-scale.dipX,p,k,omegaT)}val=Math.max(-1.4,Math.min(1.4,val));const mag=Math.min(1,Math.abs(val));const q=n*4;if(val>=0){pix[q]=255;pix[q+1]=255;pix[q+2]=255;pix[q+3]=Math.round(145*Math.pow(mag,.8))}else{pix[q]=43;pix[q+1]=112;pix[q+2]=143;pix[q+3]=Math.round(62*Math.pow(mag,.8))}}}octx.putImageData(img,0,0);ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(off,0,0,w,h);ctx.restore()}
+function zeroPoint(x1,y1,v1,x2,y2,v2){const den=v1-v2,t=Math.abs(den)<1e-9?.5:v1/den;return {x:x1+(x2-x1)*t,y:y1+(y2-y1)*t}}
+function renderDiffractionWavefronts(w,h){if(diffractionDirty)rebuildDiffraction();const c=Math.cos(phase),s=Math.sin(phase);const sx=w/(GW-1),sy=h/(GH-1);ctx.save();ctx.lineWidth=1.65;ctx.lineCap='round';for(let gy=0;gy<GH-1;gy++){for(let gx=0;gx<GW-1;gx++){const i00=gy*GW+gx,i10=i00+1,i01=i00+GW,i11=i01+1;const a0=dAmp[i00],a1=dAmp[i10],a2=dAmp[i11],a3=dAmp[i01];const amp=(a0+a1+a2+a3)*.25;if(amp<.045)continue;const q00=dIm[i00]*c-dRe[i00]*s;const q10=dIm[i10]*c-dRe[i10]*s;const q11=dIm[i11]*c-dRe[i11]*s;const q01=dIm[i01]*c-dRe[i01]*s;const crest=((dRe[i00]+dRe[i10]+dRe[i11]+dRe[i01])*.25*c +(dIm[i00]+dIm[i10]+dIm[i11]+dIm[i01])*.25*s)>0;if(!crest)continue;const pts=[];if((q00<=0&&q10>0)||(q00>0&&q10<=0))pts.push(zeroPoint(gx,gy,q00,gx+1,gy,q10));if((q10<=0&&q11>0)||(q10>0&&q11<=0))pts.push(zeroPoint(gx+1,gy,q10,gx+1,gy+1,q11));if((q11<=0&&q01>0)||(q11>0&&q01<=0))pts.push(zeroPoint(gx+1,gy+1,q11,gx,gy+1,q01));if((q01<=0&&q00>0)||(q01>0&&q00<=0))pts.push(zeroPoint(gx,gy+1,q01,gx,gy,q00));if(pts.length<2)continue;const alpha=.22+.72*Math.min(1,amp);ctx.strokeStyle='rgba(255,255,255,'+alpha.toFixed(3)+')';const drawPair=(a,b)=>{ctx.beginPath();ctx.moveTo(a.x*sx,a.y*sy);ctx.lineTo(b.x*sx,b.y*sy);ctx.stroke()};if(pts.length===2)drawPair(pts[0],pts[1]);else if(pts.length===4){drawPair(pts[0],pts[1]);drawPair(pts[2],pts[3])}}}ctx.restore()}
+function drawPlaneWavefronts(w,h,xStart,xEnd,lambdaPx){const off=((phase/(2*Math.PI))*lambdaPx)%lambdaPx;ctx.save();ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=1.7;for(let x=xStart+off;x<=xEnd+lambdaPx;x+=lambdaPx){if(x<xStart||x>xEnd)continue;ctx.beginPath();ctx.moveTo(x,8);ctx.lineTo(x,h-8);ctx.stroke()}ctx.restore()}
+function drawReflectionWavefronts(w,h,lambdaPx){const a=(+angle.value)*Math.PI/180,cx=w*.72,cy=h*.50;const nx=Math.cos(a),ny=-Math.sin(a);const dot=nx,rx=1-2*dot*nx,ry=-2*dot*ny;const tx=-ry,ty=rx;const off=((phase/(2*Math.PI))*lambdaPx)%lambdaPx;const span=Math.max(w,h)*2;ctx.save();ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=1.7;for(let x=w*.075+off;x<cx+lambdaPx;x+=lambdaPx){ctx.beginPath();let first=true;for(let y=0;y<=h;y+=5){if(barrierSide(x,y,w,h)<=0){if(first){ctx.moveTo(x,y);first=false}else ctx.lineTo(x,y)}}ctx.stroke()}const phi=(1-rx)*cx-ry*cy;for(let m=-30;m<50;m++){const target=phase/(2*Math.PI)*lambdaPx + m*lambdaPx;const bx=rx*(target-phi),by=ry*(target-phi);ctx.beginPath();ctx.moveTo(bx-tx*span,by-ty*span);ctx.lineTo(bx+tx*span,by+ty*span);ctx.stroke()}ctx.restore()}
+function drawWavefrontView(){const {w,h}=dims(),p=physics(),scale=waveScale(w);const lambdaPx=p.lambda*scale.pxPerCm;if(diffOn.checked){const bx=w*barrierXFrac;drawPlaneWavefronts(w,h,scale.dipX,bx,lambdaPx);renderDiffractionWavefronts(w,h)}else if(reflectOn.checked){drawReflectionWavefronts(w,h,lambdaPx)}else{drawPlaneWavefronts(w,h,scale.dipX,w,lambdaPx)}}
+function drawDiffractionBarrier(w,h){if(!diffOn.checked)return;const x=w*barrierXFrac,cy=h*.5,half=h*gapHalfFrac,top=cy-half,bot=cy+half;ctx.save();ctx.strokeStyle='#334a57';ctx.lineWidth=11;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x,7);ctx.lineTo(x,top);ctx.moveTo(x,bot);ctx.lineTo(x,h-7);ctx.stroke();ctx.fillStyle='#fff';ctx.strokeStyle='#334a57';ctx.lineWidth=2.5;for(const y of [top,bot]){ctx.beginPath();ctx.arc(x,y,6.5,0,Math.PI*2);ctx.fill();ctx.stroke()}ctx.restore()}
+function drawReflector(w,h){if(!reflectOn.checked)return;const a=(+angle.value)*Math.PI/180,cx=w*.72,cy=h*.5;const tx=Math.sin(a),ty=Math.cos(a),L=Math.max(w,h)*1.7;ctx.save();ctx.strokeStyle='#334a57';ctx.lineWidth=12;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx-tx*L/2,cy-ty*L/2);ctx.lineTo(cx+tx*L/2,cy+ty*L/2);ctx.stroke();ctx.restore()}
+function arrow(x1,y1,x2,y2,label){ctx.save();ctx.strokeStyle='#315b70';ctx.fillStyle='#315b70';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-8*Math.cos(a-.45),y2-8*Math.sin(a-.45));ctx.lineTo(x2-8*Math.cos(a+.45),y2-8*Math.sin(a+.45));ctx.closePath();ctx.fill();if(label){ctx.font='700 12px system-ui';ctx.fillText(label,(x1+x2)/2-10,(y1+y2)/2-6)}ctx.restore()}
+function draw(){const {w,h}=dims(),p=physics(),scale=waveScale(w);const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#ccecf2');g.addColorStop(1,'#9fd8e4');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);ctx.strokeStyle='#ffffff25';ctx.lineWidth=1;for(let y=22;y<h;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}if(displayMode==='ripple')renderRipple();else drawWavefrontView();const wobble=running?Math.sin(phase)*1.8:0;ctx.fillStyle='#274553';ctx.fillRect(scale.dipX-4.5+wobble,8,9,h-16);ctx.save();ctx.translate(scale.dipX-19,h*.57);ctx.rotate(-Math.PI/2);ctx.fillStyle='#17313e';ctx.font='700 12px system-ui';ctx.fillText('DIPPER',0,0);ctx.restore();drawDiffractionBarrier(w,h);drawReflector(w,h);const lambdaPx=p.lambda*scale.pxPerCm;if($('showDirection').checked)arrow(scale.dipX+w*.07,h*.16,scale.dipX+w*.20,h*.16,'direction');if($('showLambda').checked){const x=scale.dipX+w*.08,y=h*.83;arrow(x,y,x+lambdaPx,y,'λ');arrow(x+lambdaPx,y,x,y,'')}if($('showRuler').checked){const x0=scale.dipX+w*.04,rw=(w-scale.dipX)*.78,y=h-30;ctx.save();ctx.fillStyle='#fffddd';ctx.fillRect(x0,y,rw,21);ctx.strokeStyle='#526b77';ctx.fillStyle='#334d59';ctx.font='9px system-ui';for(let i=0;i<=30;i++){const x=x0+rw*i/30,tick=i%5===0?10:5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+tick);ctx.stroke();if(i%5===0)ctx.fillText(String(i),x-3,y+18)}ctx.fillText('cm',x0+rw+4,y+18);ctx.restore()}ctx.strokeStyle='#668a99';ctx.lineWidth=3;ctx.strokeRect(1.5,1.5,w-3,h-3)}
+function animate(now){const dt=Math.min(.05,(now-lastTime)/1000);lastTime=now;if(running){const p=physics();phase += 2*Math.PI*p.f*dt*.17;if(phase>Math.PI*200)phase%=2*Math.PI}draw();requestAnimationFrame(animate)}
+$('enter').addEventListener('click',()=>{intro.classList.add('hidden');app.classList.remove('hidden');setTimeout(resize,40)});$('apparatus').addEventListener('click',()=>{app.classList.add('hidden');intro.classList.remove('hidden')});
+$('start').addEventListener('click',()=>running=true);$('pause').addEventListener('click',()=>running=false);$('reset').addEventListener('click',()=>{running=false;phase=0;displayMode='ripple';freq.value=5;depth.value=50;angle.value=25;diffOn.checked=false;reflectOn.checked=false;barrierXFrac=.58;gapHalfFrac=.10;for(const id of ['showLambda','showRuler','showDirection'])$(id).checked=false;diffractionDirty=true;updateUI()});viewMode.addEventListener('click',()=>{displayMode=displayMode==='ripple'?'wavefronts':'ripple';updateUI()});
+diffOn.addEventListener('change',()=>{if(diffOn.checked)reflectOn.checked=false;diffractionDirty=true;updateUI()});reflectOn.addEventListener('change',()=>{if(reflectOn.checked)diffOn.checked=false;updateUI()});for(const el of [freq,depth]){el.addEventListener('input',()=>{diffractionDirty=true;updateUI()});el.addEventListener('change',()=>{diffractionDirty=true;updateUI()})}angle.addEventListener('input',updateUI);angle.addEventListener('change',updateUI);for(const id of ['showLambda','showRuler','showDirection'])$(id).addEventListener('change',updateUI);
+canvas.addEventListener('pointerdown',e=>{if(!diffOn.checked)return;const r=canvas.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;const bx=r.width*barrierXFrac,cy=r.height*.5,half=r.height*gapHalfFrac;const top=cy-half,bot=cy+half;const nearTop=Math.hypot(x-bx,y-top)<27;const nearBot=Math.hypot(x-bx,y-bot)<27;if(nearTop||nearBot)dragMode='gap';else if(Math.abs(x-bx)<25){dragMode='barrier';dragStartX=e.clientX;dragStartBarrier=barrierXFrac}else return;canvas.setPointerCapture?.(e.pointerId);e.preventDefault()});canvas.addEventListener('pointermove',e=>{if(!dragMode)return;const r=canvas.getBoundingClientRect();if(dragMode==='barrier'){barrierXFrac=Math.max(.22,Math.min(.72,dragStartBarrier+(e.clientX-dragStartX)/r.width))}else{const yf=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));gapHalfFrac=Math.max(0,Math.min(.46,Math.abs(yf-.5)))}diffractionDirty=true;e.preventDefault()});function endDrag(){dragMode=null}canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);
+updateUI();resize();requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
