@@ -42,8 +42,8 @@ function nice(s){return s.replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim().toLow
 function parse(path){
  const filename=path.split('/').pop();
  if(!filename.toLowerCase().endsWith('.html')||filename.toLowerCase()==='index.html')return null;
- const stem=filename.replace(/\\.html$/i,'');
- const vm=stem.match(/_v(\\d+(?:_\\d+)*)$/i);
+ const stem=filename.replace(/\.html$/i,'');
+ const vm=stem.match(/_v(\d+(?:_\d+)*)$/i);
  const cleanStem=vm?stem.slice(0,vm.index):stem;
  const version=vm?vm[1]:'';
  const appKey=(path.slice(0,path.lastIndexOf('/')+1)+cleanStem).toLowerCase();
