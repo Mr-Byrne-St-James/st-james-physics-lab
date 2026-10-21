@@ -14,11 +14,11 @@ label{display:block;font-weight:750;margin-bottom:8px}.range-row{display:flex;ju
 <body><main>
 <div class="brand"><i>λ</i> St James Physics Lab</div>
 <h1>Black-body radiation</h1>
-<p class="intro">Change the object’s temperature and watch its emitted spectrum shift. The curve shows spectral radiance, the dashed marker shows Wien’s displacement peak, and the logarithmic vertical axis lets you compare the full range of intensities.</p>
+<p class="intro">Change the object’s temperature and watch its emitted spectrum shift. The curve shows spectral power emitted per unit area at each wavelength, the dashed marker shows Wien’s displacement peak, and the logarithmic vertical axis lets you compare the full range of intensities.</p>
 <div class="layout">
 <section class="card graph-card" aria-label="Black-body spectrum graph">
-<div class="topline"><div><div class="eyebrow">Spectral radiance vs wavelength</div><div class="small-note" style="margin-top:3px">Planck curve · wavelength axis in nanometres</div></div><div class="temp-display" id="tempRead">5800 <span>K</span></div></div>
-<canvas id="plot" aria-label="Graph of spectral radiance against wavelength on a logarithmic intensity scale"></canvas><div class="xscale-control"><label for="xScale">Wavelength axis limit</label><input id="xScale" type="range" min="3000" max="12000" step="250" value="3000"><span id="xScaleValue">3,000 nm</span></div>
+<div class="topline"><div><div class="eyebrow">Spectral power density vs wavelength</div><div class="small-note" style="margin-top:3px">Planck curve · wavelength axis in nanometres</div></div><div class="temp-display" id="tempRead">5800 <span>K</span></div></div>
+<canvas id="plot" aria-label="Graph of spectral power density against wavelength on a logarithmic intensity scale"></canvas><div class="xscale-control"><label for="xScale">Wavelength axis limit</label><input id="xScale" type="range" min="3000" max="12000" step="250" value="3000"><span id="xScaleValue">3,000 nm</span></div>
 <div class="legend"><span class="key"><i class="swatch"></i>Emitted spectrum</span><span class="key"><i class="swatch peak"></i>Wien peak</span><span class="key"><i class="swatch visible"></i>Visible wavelengths</span></div>
 </section>
 <aside class="side">
@@ -26,14 +26,14 @@ label{display:block;font-weight:750;margin-bottom:8px}.range-row{display:flex;ju
 <section class="card readout-card"><div class="eyebrow">Live measurements</div><div class="stat"><div class="name">Wien peak wavelength</div><div class="value" id="peakNm">—</div></div><div class="stat"><div class="name">Peak region</div><div class="value" id="region" style="font-size:1.1rem">—</div></div><div class="stat"><div class="name">Total power emitted</div><div class="value" id="power">—</div><div class="small-note">Stefan–Boltzmann law · per square metre</div></div><div class="formula">λ<sub>max</sub> = b / T &nbsp; · &nbsp; P/A = σT<sup>4</sup></div></section>
 </aside></div>
 
-<div class="footer">Model: Planck’s law for an ideal black body. The visible band is highlighted on the wavelength axis; logarithmic intensity labels are in W·m⁻²·sr⁻¹·nm⁻¹.</div>
+<div class="footer">Model: Planck’s law for an ideal black body. The visible band is highlighted on the wavelength axis; logarithmic intensity labels are in W·m⁻²·nm⁻¹.</div>
 </main>
 <script>
 (()=>{
 const c=document.getElementById('plot'),ctx=c.getContext('2d'),temp=document.getElementById('temp'),xScale=document.getElementById('xScale');
 const B=2.897771955e6, SIG=5.670374419e-8, H=6.62607015e-34, C=299792458, K=1.380649e-23;
 const xmin=100,ymin=1e-4,ymax=1e8;let xmax=3000;
-function planckNm(nm,T){const l=nm*1e-9,x=H*C/(l*K*T);if(x>700)return 0;return (2*H*C*C/Math.pow(l,5))/(Math.exp(x)-1)*1e-9/Math.PI}
+function planckNm(nm,T){const l=nm*1e-9,x=H*C/(l*K*T);if(x>700)return 0;return (2*H*C*C/Math.pow(l,5))/(Math.exp(x)-1)*Math.PI*1e-9}
 function size(){const r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);ctx.setTransform(d,0,0,d,0,0);draw()}
 function draw(){const w=c.clientWidth,h=c.clientHeight;if(!w||!h)return;ctx.clearRect(0,0,w,h);const T=+temp.value,pl={l:66,r:18,t:20,b:57},gw=w-pl.l-pl.r,gh=h-pl.t-pl.b;xmax=+xScale.value;
 const X=nm=>pl.l+(nm-xmin)/(xmax-xmin)*gw, Y=v=>pl.t+(Math.log10(ymax)-Math.log10(v))/(Math.log10(ymax)-Math.log10(ymin))*gh;
@@ -44,7 +44,7 @@ ctx.strokeStyle='#29425d';ctx.lineWidth=1;ctx.font='11px system-ui';ctx.fillStyl
 const tickStep=xmax<=4000?500:xmax<=8000?1000:2000;const xTicks=[100];for(let n=tickStep;n<xmax;n+=tickStep)xTicks.push(n);xTicks.push(xmax);xTicks.forEach(n=>{let x=X(n);ctx.beginPath();ctx.moveTo(x,pl.t);ctx.lineTo(x,pl.t+gh);ctx.stroke();ctx.fillText(n.toLocaleString(),x,pl.t+gh+19)});
 [1e-4,1e-2,1,1e2,1e4,1e6,1e8].forEach(v=>{let y=Y(v);ctx.beginPath();ctx.moveTo(pl.l,y);ctx.lineTo(pl.l+gw,y);ctx.stroke();ctx.textAlign='right';ctx.fillText(v>=1?`10${sup(Math.round(Math.log10(v)))}`:`10${sup(Math.round(Math.log10(v)))}`,pl.l-9,y+4)});
 ctx.strokeStyle='#7086a1';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(pl.l,pl.t);ctx.lineTo(pl.l,pl.t+gh);ctx.lineTo(pl.l+gw,pl.t+gh);ctx.stroke();
-ctx.save();ctx.translate(17,pl.t+gh/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillStyle='#c9d7e8';ctx.font='12px system-ui';ctx.fillText('Spectral radiance (log scale)',0,0);ctx.restore();ctx.fillStyle='#c9d7e8';ctx.textAlign='center';ctx.font='12px system-ui';ctx.fillText('Wavelength (nm)',pl.l+gw/2,h-8);
+ctx.save();ctx.translate(17,pl.t+gh/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillStyle='#c9d7e8';ctx.font='12px system-ui';ctx.fillText('Spectral power density (log scale)',0,0);ctx.restore();ctx.fillStyle='#c9d7e8';ctx.textAlign='center';ctx.font='12px system-ui';ctx.fillText('Wavelength (nm)',pl.l+gw/2,h-8);
 // Curve with clipped positive values
 ctx.save();ctx.beginPath();ctx.rect(pl.l,pl.t,gw,gh);ctx.clip();ctx.beginPath();let begun=false;for(let i=0;i<=700;i++){let nm=xmin+(xmax-xmin)*i/700,val=planckNm(nm,T);if(val<ymin)val=ymin;let x=X(nm),y=Y(Math.min(val,ymax));if(!begun){ctx.moveTo(x,y);begun=true}else ctx.lineTo(x,y)}ctx.strokeStyle='#62d5ff';ctx.lineWidth=3;ctx.shadowColor='#45c9ff88';ctx.shadowBlur=9;ctx.stroke();ctx.shadowBlur=0;
 const peak=B/T,py=Y(Math.max(ymin,Math.min(ymax,planckNm(peak,T)))),px=X(peak);ctx.setLineDash([5,5]);ctx.strokeStyle='#ffc96b';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,pl.t);ctx.lineTo(px,pl.t+gh);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#ffc96b';ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();ctx.restore();
