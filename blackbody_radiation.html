@@ -36,7 +36,7 @@ const xmin=100,xmax=3000,ymin=1e-4,ymax=1e8;
 function planckNm(nm,T){const l=nm*1e-9,x=H*C/(l*K*T);if(x>700)return 0;return (2*H*C*C/Math.pow(l,5))/(Math.exp(x)-1)*1e-9/Math.PI}
 function size(){const r=c.getBoundingClientRect(),d=devicePixelRatio||1;c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);ctx.setTransform(d,0,0,d,0,0);draw()}
 function draw(){const w=c.clientWidth,h=c.clientHeight;if(!w||!h)return;ctx.clearRect(0,0,w,h);const T=+temp.value,pl={l:66,r:18,t:20,b:57},gw=w-pl.l-pl.r,gh=h-pl.t-pl.b;
-const X=nm=>pl.l+(nm-xmin)/(xmax-xmin)*gw, Y=v=>pl.t+(Math.log10(v)-Math.log10(ymin))/(Math.log10(ymax)-Math.log10(ymin))*gh;
+const X=nm=>pl.l+(nm-xmin)/(xmax-xmin)*gw, Y=v=>pl.t+(Math.log10(ymax)-Math.log10(v))/(Math.log10(ymax)-Math.log10(ymin))*gh;
 // Visible band background
 ctx.fillStyle='rgba(89,135,191,.08)';ctx.fillRect(X(380),pl.t,X(750)-X(380),gh);
 ctx.strokeStyle='#29425d';ctx.lineWidth=1;ctx.font='11px system-ui';ctx.fillStyle='#9eb0c8';ctx.textAlign='center';
