@@ -136,200 +136,138 @@ input[type=text]{background:#0f172a;color:white;border:1px solid #475569;border-
 </div>
 <script>
 function svgWrap(body,w=700,h=260){
-return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Question diagram">${body}</svg>`;
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Question diagram">${body}</svg>`;
 }
 function wavePath(x0=40,y0=120,width=600,amp=55,cycles=3){
-let d=`M ${x0} ${y0}`;
-const steps=180;
-for(let i=1;i<=steps;i++){
-const x=x0+width*i/steps;
-const y=y0-amp*Math.sin(2*Math.PI*cycles*i/steps);
-d+=` L ${x.toFixed(1)} ${y.toFixed(1)}`;
-}
-return d;
+  let d=`M ${x0} ${y0}`;
+  const steps=180;
+  for(let i=1;i<=steps;i++){
+    const x=x0+width*i/steps;
+    const y=y0-amp*Math.sin(2*Math.PI*cycles*i/steps);
+    d+=` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+  }
+  return d;
 }
 function getGraphic(q){
-const common=`stroke="#0f172a" stroke-width="3" fill="none"`;
-if(q.n===11){
-let dots='';
-const groups=[[70,7],[210,13],[370,7],[520,13]];
-for(const [cx,count] of groups){
-for(let i=0;i<count;i++){
-const x=cx+(i-(count-1)/2)*8;
-dots+=`<circle cx="${x}" cy="125" r="4" fill="#0f172a"/>`;
+  const common=`stroke="#0f172a" stroke-width="3" fill="none"`;
+  const arrowDefs=`<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f172a"/></marker><marker id="bluearr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0284c7"/></marker></defs>`;
+  function longParticles(){
+    const xs=[55,70,88,112,145,165,173,181,189,197,205,213,221,245,278,314,350,382,408,428,436,444,452,460,468,476,500,530,560,590,610,618,626,634,642,650];
+    return xs.map(x=>`<circle cx="${x}" cy="120" r="4.2" fill="#0f172a"/>`).join('');
+  }
+  if(q.n===8 || q.n===9){
+    return svgWrap(`${longParticles()}<line x1="35" y1="165" x2="665" y2="165" stroke="#94a3b8" stroke-width="2"/><text x="270" y="205" class="graphic-small">Longitudinal wave particle positions</text>`);
+  }
+  if(q.n===11){
+    const sparseA=[65,95,125,155];
+    const denseB=[275,284,293,302,311,320,329,338,347,356];
+    const sparseC=[490,525,560,595];
+    const dots=[...sparseA,...denseB,...sparseC].map(x=>`<circle cx="${x}" cy="105" r="5" fill="#0f172a"/>`).join('');
+    return svgWrap(`${dots}
+      <line x1="55" y1="150" x2="165" y2="150" stroke="#64748b" stroke-width="2"/><text x="105" y="180" class="graphic-label">A</text>
+      <line x1="265" y1="150" x2="365" y2="150" stroke="#64748b" stroke-width="2"/><text x="310" y="180" class="graphic-label">B</text>
+      <line x1="480" y1="150" x2="605" y2="150" stroke="#64748b" stroke-width="2"/><text x="535" y="180" class="graphic-label">C</text>
+      <text x="205" y="225" class="graphic-small">Which labelled region is a compression?</text>`);
+  }
+  if(q.n===12){
+    return svgWrap(`${arrowDefs}
+      <line x1="80" y1="35" x2="620" y2="35" stroke="#0f172a" stroke-width="3" marker-end="url(#arr)"/><text x="270" y="25" class="graphic-small">direction of wave travel</text>
+      <circle cx="125" cy="125" r="9" fill="#0284c7"/><line x1="125" y1="85" x2="125" y2="165" stroke="#0f172a" stroke-width="3"/><polygon points="125,78 118,90 132,90" fill="#0f172a"/><polygon points="125,172 118,160 132,160" fill="#0f172a"/><text x="115" y="205" class="graphic-label">A</text>
+      <circle cx="350" cy="125" r="9" fill="#0284c7"/><line x1="300" y1="125" x2="400" y2="125" stroke="#0f172a" stroke-width="3"/><polygon points="292,125 305,118 305,132" fill="#0f172a"/><polygon points="408,125 395,118 395,132" fill="#0f172a"/><text x="340" y="205" class="graphic-label">B</text>
+      <circle cx="575" cy="125" r="9" fill="#0284c7"/><line x1="575" y1="125" x2="640" y2="125" stroke="#0f172a" stroke-width="3" marker-end="url(#arr)"/><text x="565" y="205" class="graphic-label">C</text>`);
+  }
+  if(q.n===18){
+    return svgWrap(`${arrowDefs}
+      <line x1="35" y1="125" x2="665" y2="125" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 7"/>
+      <path d="${wavePath(45,125,600,55,3)}" ${common}/>
+      <line x1="95" y1="125" x2="95" y2="70" stroke="#0284c7" stroke-width="4"/><polygon points="95,65 88,77 102,77" fill="#0284c7"/><polygon points="95,130 88,118 102,118" fill="#0284c7"/><text x="105" y="98" class="graphic-label">A</text>
+      <line x1="195" y1="125" x2="195" y2="180" stroke="#0284c7" stroke-width="4"/><polygon points="195,185 188,173 202,173" fill="#0284c7"/><polygon points="195,120 188,132 202,132" fill="#0284c7"/><text x="205" y="158" class="graphic-label">B</text>
+      <line x1="295" y1="70" x2="295" y2="180" stroke="#64748b" stroke-width="4"/><polygon points="295,65 288,77 302,77" fill="#64748b"/><polygon points="295,185 288,173 302,173" fill="#64748b"/><text x="305" y="130" class="graphic-label">C</text>
+      <line x1="395" y1="225" x2="595" y2="225" stroke="#0f172a" stroke-width="3"/><polygon points="395,225 408,218 408,232" fill="#0f172a"/><polygon points="595,225 582,218 582,232" fill="#0f172a"/><text x="478" y="250" class="graphic-label">λ</text>`);
+  }
+  if(q.n===19){
+    return svgWrap(`<path d="${wavePath(45,120,600,50,3)}" ${common}/>
+      <line x1="95" y1="205" x2="295" y2="205" stroke="#0284c7" stroke-width="4"/><polygon points="95,205 107,199 107,211" fill="#0284c7"/><polygon points="295,205 283,199 283,211" fill="#0284c7"/><text x="190" y="230" class="graphic-label">A</text>
+      <line x1="95" y1="250" x2="195" y2="250" stroke="#64748b" stroke-width="4"/><polygon points="95,250 107,244 107,256" fill="#64748b"/><polygon points="195,250 183,244 183,256" fill="#64748b"/><text x="140" y="275" class="graphic-label">B</text>
+      <line x1="295" y1="250" x2="495" y2="250" stroke="#0284c7" stroke-width="4"/><polygon points="295,250 307,244 307,256" fill="#0284c7"/><polygon points="495,250 483,244 483,256" fill="#0284c7"/><text x="390" y="275" class="graphic-label">C</text>`,700,300);
+  }
+  if(q.n===20){
+    return svgWrap(`<path d="${wavePath(45,110,600,48,3)}" ${common}/><line x1="95" y1="205" x2="295" y2="205" stroke="#0284c7" stroke-width="4"/><polygon points="95,205 107,199 107,211" fill="#0284c7"/><polygon points="295,205 283,199 283,211" fill="#0284c7"/><text x="150" y="235" class="graphic-small">marked distance</text>`);
+  }
+  if(q.n===38){
+    return svgWrap(`${[100,200,300,400,500,600].map(x=>`<line x1="${x}" y1="55" x2="${x}" y2="175" stroke="#0284c7" stroke-width="4"/>`).join('')}<line x1="100" y1="215" x2="600" y2="215" stroke="#0f172a" stroke-width="3"/><polygon points="100,215 113,208 113,222" fill="#0f172a"/><polygon points="600,215 587,208 587,222" fill="#0f172a"/><text x="313" y="247" class="graphic-label">2.5 m</text><text x="90" y="35" class="graphic-small">6 wavefronts = 5 wavelength intervals</text>`);
+  }
+  if(q.n===39){
+    return svgWrap(`${[100,200,300,400,500,600].map(x=>`<line x1="${x}" y1="45" x2="${x}" y2="170" stroke="#0284c7" stroke-width="4"/>`).join('')}<line x1="80" y1="210" x2="620" y2="210" stroke="#0f172a" stroke-width="3"/>${[100,200,300,400,500,600].map((x,i)=>`<line x1="${x}" y1="202" x2="${x}" y2="218" stroke="#0f172a" stroke-width="2"/><text x="${x-10}" y="242" class="graphic-small">${i*20}</text>`).join('')}<text x="625" y="215" class="graphic-small">cm</text><text x="40" y="32" class="graphic-label">frequency = 5 Hz</text>`);
+  }
+  if(q.n===46 || q.n===48){
+    const freq=q.n===48?`<text x="35" y="32" class="graphic-label">frequency = 6 Hz</text>`:'';
+    return svgWrap(`${freq}${[110,190,270,350,430,510,590].map(x=>`<path d="M ${x} 60 Q ${x+18} 120 ${x} 180" stroke="#0284c7" stroke-width="4" fill="none"/>`).join('')}<line x1="90" y1="220" x2="610" y2="220" stroke="#0f172a" stroke-width="3"/>${[110,190,270,350,430,510,590].map((x,i)=>`<line x1="${x}" y1="212" x2="${x}" y2="228" stroke="#0f172a" stroke-width="2"/><text x="${x-8}" y="250" class="graphic-small">${i*4}</text>`).join('')}<text x="620" y="225" class="graphic-small">cm</text>`);
+  }
+  if(q.n===57 || q.n===58){
+    const slower=q.n===57;
+    return svgWrap(`${arrowDefs}<text x="35" y="28" class="graphic-label">TIP: TAGAGA</text>
+      <line x1="40" y1="125" x2="660" y2="125" stroke="#64748b" stroke-width="3"/><text x="45" y="112" class="graphic-small">${slower?'slower medium below':'faster medium below'}</text>
+      <line x1="350" y1="30" x2="350" y2="245" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6"/><text x="360" y="48" class="graphic-small">normal</text>
+      <line x1="220" y1="50" x2="350" y2="125" stroke="#0f172a" stroke-width="4" marker-end="url(#arr)"/>
+      <line x1="350" y1="125" x2="420" y2="235" stroke="#0284c7" stroke-width="4"/><text x="410" y="255" class="graphic-label">A</text>
+      <line x1="350" y1="125" x2="520" y2="225" stroke="#64748b" stroke-width="4"/><text x="515" y="245" class="graphic-label">B</text>
+      <line x1="350" y1="125" x2="620" y2="195" stroke="#64748b" stroke-width="4"/><text x="620" y="215" class="graphic-label">C</text>`);
+  }
+  if(q.n===60){
+    return svgWrap(`${arrowDefs}<rect x="35" y="130" width="630" height="120" fill="#dbeafe"/><line x1="35" y1="130" x2="665" y2="130" stroke="#64748b" stroke-width="3"/><text x="520" y="152" class="graphic-small">slower medium</text><text x="520" y="30" class="graphic-small">faster medium</text>
+      <line x1="350" y1="25" x2="350" y2="245" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 6"/>
+      <line x1="120" y1="30" x2="350" y2="130" stroke="#0f172a" stroke-width="3" marker-end="url(#arr)"/>
+      <line x1="350" y1="130" x2="405" y2="240" stroke="#0284c7" stroke-width="3" marker-end="url(#bluearr)"/>
+      <line x1="153" y1="15" x2="177" y2="78" stroke="#0f172a" stroke-width="3"/><line x1="208" y1="39" x2="232" y2="102" stroke="#0f172a" stroke-width="3"/><line x1="263" y1="63" x2="287" y2="126" stroke="#0f172a" stroke-width="3"/>
+      <line x1="323" y1="151" x2="415" y2="197" stroke="#0284c7" stroke-width="3"/><line x1="341" y1="183" x2="433" y2="229" stroke="#0284c7" stroke-width="3"/><line x1="359" y1="215" x2="423" y2="247" stroke="#0284c7" stroke-width="3"/>
+      <text x="40" y="242" class="graphic-small">Closer wavefronts in slower medium</text>`);
+  }
+  if(q.n===61 || q.n===62){
+    const close=q.n===61; const before=[100,190,280]; const after=close?[350,405,460,515,570,625]:[350,470,590];
+    return svgWrap(`<line x1="330" y1="30" x2="330" y2="225" stroke="#64748b" stroke-width="3"/>${before.map(x=>`<line x1="${x}" y1="55" x2="${x}" y2="200" stroke="#0f172a" stroke-width="4"/>`).join('')}${after.map(x=>`<line x1="${x}" y1="55" x2="${x}" y2="200" stroke="#0284c7" stroke-width="4"/>`).join('')}<text x="240" y="245" class="graphic-small">boundary</text>`);
+  }
+  if(q.n===68){
+    return svgWrap(`${arrowDefs}<line x1="60" y1="180" x2="640" y2="180" stroke="#64748b" stroke-width="4"/><line x1="350" y1="25" x2="350" y2="225" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6"/><line x1="170" y1="55" x2="350" y2="180" stroke="#0f172a" stroke-width="4" marker-end="url(#arr)"/><line x1="350" y1="180" x2="530" y2="55" stroke="#0284c7" stroke-width="4" marker-end="url(#bluearr)"/><path d="M 350 120 A 60 60 0 0 0 301 145" stroke="#0f172a" stroke-width="2" fill="none"/><text x="300" y="115" class="graphic-label">35°</text><text x="360" y="48" class="graphic-small">normal</text>`);
+  }
+  if(q.n===69){
+    return svgWrap(`${arrowDefs}<line x1="60" y1="180" x2="640" y2="180" stroke="#64748b" stroke-width="4"/><line x1="350" y1="25" x2="350" y2="225" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6"/><line x1="150" y1="50" x2="350" y2="180" stroke="#0f172a" stroke-width="4" marker-end="url(#arr)"/><line x1="350" y1="180" x2="550" y2="50" stroke="#0284c7" stroke-width="4" marker-end="url(#bluearr)"/><text x="285" y="115" class="graphic-label">A</text><text x="405" y="115" class="graphic-label">B</text><text x="220" y="170" class="graphic-label">C</text>`);
+  }
+  if(q.n===70){
+    function panel(x,label,mode){
+      const P=x+105, yb=210;
+      let refl;
+      if(mode==='correct') refl=`<line x1="${P}" y1="190" x2="${x+185}" y2="65" stroke="#0284c7" stroke-width="3" marker-end="url(#bluearr)"/>`;
+      else if(mode==='shallow') refl=`<line x1="${P}" y1="190" x2="${x+205}" y2="135" stroke="#0284c7" stroke-width="3" marker-end="url(#bluearr)"/>`;
+      else refl=`<line x1="${P}" y1="190" x2="${P}" y2="55" stroke="#0284c7" stroke-width="3" marker-end="url(#bluearr)"/>`;
+      return `<g><rect x="${x}" y="20" width="210" height="220" fill="#fff" stroke="#cbd5e1"/><text x="${x+95}" y="42" class="graphic-label">${label}</text><line x1="${x+15}" y1="210" x2="${x+195}" y2="210" stroke="#64748b" stroke-width="4"/><line x1="${P}" y1="55" x2="${P}" y2="220" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 5"/><line x1="${x+30}" y1="65" x2="${P}" y2="190" stroke="#0f172a" stroke-width="3" marker-end="url(#arr)"/>${refl}</g>`;
+    }
+    return svgWrap(`${arrowDefs}${panel(10,'A','shallow')}${panel(245,'B','correct')}${panel(480,'C','normal')}`,700,260);
+  }
+  return `<div style="padding:24px;color:#475569">Diagram placeholder</div>`;
 }
-}
-return svgWrap(`
-${dots}
-<line x1="35" y1="160" x2="665" y2="160" stroke="#94a3b8" stroke-width="2"/>
-<text x="195" y="205" class="graphic-label">A</text>
-<text x="355" y="205" class="graphic-label">B</text>
-<text x="505" y="205" class="graphic-label">C</text>
-<line x1="210" y1="170" x2="210" y2="190" ${common}/>
-<line x1="370" y1="170" x2="370" y2="190" ${common}/>
-<line x1="520" y1="170" x2="520" y2="190" ${common}/>
-`);
-}
-if(q.n===12){
-return svgWrap(`
-<path d="${wavePath(45,75,250,42,2)}" ${common}/>
-<text x="150" y="145" class="graphic-label">A</text>
-<g>${Array.from({length:30},(_,i)=>`<circle cx="${390+i*8}" cy="75" r="3.5" fill="#0f172a"/>`).join('')}</g>
-<g>${Array.from({length:12},(_,i)=>`<circle cx="${455+i*3.5}" cy="75" r="3.5" fill="#0f172a"/>`).join('')}</g>
-<text x="505" y="145" class="graphic-label">B</text>
-<text x="30" y="210" class="graphic-small">Which diagram represents a longitudinal wave?</text>
-`);
-}
-if(q.n===18){
-return svgWrap(`
-<line x1="35" y1="125" x2="665" y2="125" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 7"/>
-<path d="${wavePath(45,125,600,55,3)}" ${common}/>
-<line x1="145" y1="125" x2="145" y2="70" stroke="#0284c7" stroke-width="4"/>
-<polygon points="145,65 138,77 152,77" fill="#0284c7"/>
-<text x="156" y="95" class="graphic-label">A</text>
-<line x1="245" y1="125" x2="245" y2="180" stroke="#64748b" stroke-width="4"/>
-<text x="256" y="162" class="graphic-label">B</text>
-<line x1="345" y1="70" x2="345" y2="180" stroke="#64748b" stroke-width="4"/>
-<text x="356" y="130" class="graphic-label">C</text>
-`);
-}
-if(q.n===19){
-return svgWrap(`
-<path d="${wavePath(45,120,600,50,3)}" ${common}/>
-<line x1="95" y1="200" x2="295" y2="200" stroke="#0284c7" stroke-width="4"/>
-<polygon points="95,200 107,194 107,206" fill="#0284c7"/><polygon points="295,200 283,194 283,206" fill="#0284c7"/>
-<text x="190" y="225" class="graphic-label">A</text>
-<line x1="95" y1="235" x2="195" y2="235" stroke="#64748b" stroke-width="4"/>
-<text x="140" y="255" class="graphic-label">B</text>
-<line x1="295" y1="235" x2="495" y2="235" stroke="#64748b" stroke-width="4"/>
-<text x="390" y="255" class="graphic-label">C</text>
-`,700,280);
-}
-if(q.n===20){
-return svgWrap(`
-<path d="${wavePath(45,110,600,48,3)}" ${common}/>
-<line x1="95" y1="205" x2="295" y2="205" stroke="#0284c7" stroke-width="4"/>
-<polygon points="95,205 107,199 107,211" fill="#0284c7"/><polygon points="295,205 283,199 283,211" fill="#0284c7"/>
-<text x="150" y="235" class="graphic-small">marked distance</text>
-`);
-}
-if(q.n===38){
-return svgWrap(`
-${[100,200,300,400,500,600].map(x=>`<line x1="${x}" y1="55" x2="${x}" y2="175" stroke="#0284c7" stroke-width="4"/>`).join('')}
-<line x1="100" y1="215" x2="600" y2="215" stroke="#0f172a" stroke-width="3"/>
-<polygon points="100,215 113,208 113,222" fill="#0f172a"/><polygon points="600,215 587,208 587,222" fill="#0f172a"/>
-<text x="313" y="247" class="graphic-label">2.5 m</text>
-<text x="90" y="35" class="graphic-small">6 wavefronts</text>
-`);
-}
-if(q.n===39){
-return svgWrap(`
-${[100,200,300,400,500,600].map(x=>`<line x1="${x}" y1="45" x2="${x}" y2="170" stroke="#0284c7" stroke-width="4"/>`).join('')}
-<line x1="80" y1="210" x2="620" y2="210" stroke="#0f172a" stroke-width="3"/>
-${[100,200,300,400,500,600].map((x,i)=>`<line x1="${x}" y1="202" x2="${x}" y2="218" stroke="#0f172a" stroke-width="2"/><text x="${x-10}" y="242" class="graphic-small">${i*20}</text>`).join('')}
-<text x="625" y="215" class="graphic-small">cm</text>
-<text x="40" y="32" class="graphic-label">frequency = 5 Hz</text>
-`);
-}
-if(q.n===46 || q.n===48){
-const freq = q.n===48 ? `<text x="35" y="32" class="graphic-label">frequency = 6 Hz</text>` : '';
-return svgWrap(`
-${freq}
-${[110,190,270,350,430,510,590].map(x=>`<path d="M ${x} 60 Q ${x+18} 120 ${x} 180" stroke="#0284c7" stroke-width="4" fill="none"/>`).join('')}
-<line x1="90" y1="220" x2="610" y2="220" stroke="#0f172a" stroke-width="3"/>
-${[110,190,270,350,430,510,590].map((x,i)=>`<line x1="${x}" y1="212" x2="${x}" y2="228" stroke="#0f172a" stroke-width="2"/><text x="${x-8}" y="250" class="graphic-small">${i*4}</text>`).join('')}
-<text x="620" y="225" class="graphic-small">cm</text>
-`);
-}
-if(q.n===57 || q.n===58){
-const slower=q.n===57;
-return svgWrap(`
-<line x1="40" y1="130" x2="660" y2="130" stroke="#64748b" stroke-width="3"/>
-<line x1="350" y1="25" x2="350" y2="235" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6"/>
-<line x1="120" y1="40" x2="350" y2="130" stroke="#0f172a" stroke-width="4"/>
-<polygon points="350,130 333,118 337,136" fill="#0f172a"/>
-<line x1="350" y1="130" x2="470" y2="${slower?230:205}" stroke="#0284c7" stroke-width="4"/>
-<line x1="350" y1="130" x2="570" y2="${slower?185:230}" stroke="#64748b" stroke-width="3"/>
-<line x1="350" y1="130" x2="350" y2="230" stroke="#64748b" stroke-width="3"/>
-<text x="462" y="${slower?250:200}" class="graphic-label">A</text>
-<text x="565" y="${slower?180:250}" class="graphic-label">B</text>
-<text x="360" y="225" class="graphic-label">C</text>
-<text x="365" y="45" class="graphic-small">normal</text>
-<text x="45" y="115" class="graphic-small">${slower?'slower medium below':'faster medium below'}</text>
-`);
-}
-if(q.n===60){
-return svgWrap(`
-<rect x="40" y="135" width="620" height="100" fill="#dbeafe"/>
-<text x="500" y="160" class="graphic-small">slower medium</text>
-${[0,1,2,3].map(i=>`<line x1="${95+i*80}" y1="${45+i*18}" x2="${270+i*80}" y2="${100+i*18}" stroke="#0f172a" stroke-width="3"/>`).join('')}
-${[0,1,2,3].map(i=>`<line x1="${260+i*65}" y1="${140+i*14}" x2="${390+i*65}" y2="${195+i*14}" stroke="#0284c7" stroke-width="3"/>`).join('')}
-<line x1="40" y1="135" x2="660" y2="135" stroke="#64748b" stroke-width="3"/>
-`);
-}
-if(q.n===61 || q.n===62){
-const close=q.n===61;
-const before=[100,190,280];
-const after=close?[350,405,460,515,570,625]:[350,470,590];
-return svgWrap(`
-<line x1="330" y1="30" x2="330" y2="225" stroke="#64748b" stroke-width="3"/>
-${before.map(x=>`<line x1="${x}" y1="55" x2="${x}" y2="200" stroke="#0f172a" stroke-width="4"/>`).join('')}
-${after.map(x=>`<line x1="${x}" y1="55" x2="${x}" y2="200" stroke="#0284c7" stroke-width="4"/>`).join('')}
-<text x="240" y="245" class="graphic-small">boundary</text>
-`);
-}
-if(q.n===68){
-return svgWrap(`
-<line x1="60" y1="180" x2="640" y2="180" stroke="#64748b" stroke-width="4"/>
-<line x1="350" y1="25" x2="350" y2="225" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6"/>
-<line x1="170" y1="55" x2="350" y2="180" stroke="#0f172a" stroke-width="4"/>
-<line x1="350" y1="180" x2="530" y2="55" stroke="#0284c7" stroke-width="4"/>
-<path d="M 350 120 A 60 60 0 0 0 301 145" stroke="#0f172a" stroke-width="2" fill="none"/>
-<text x="300" y="115" class="graphic-label">35°</text>
-<text x="360" y="48" class="graphic-small">normal</text>
-`);
-}
-if(q.n===69){
-return svgWrap(`
-<line x1="60" y1="180" x2="640" y2="180" stroke="#64748b" stroke-width="4"/>
-<line x1="350" y1="25" x2="350" y2="225" stroke="#94a3b8" stroke-width="2" stroke-dasharray="8 6"/>
-<line x1="150" y1="50" x2="350" y2="180" stroke="#0f172a" stroke-width="4"/>
-<line x1="350" y1="180" x2="550" y2="50" stroke="#0284c7" stroke-width="4"/>
-<text x="285" y="115" class="graphic-label">A</text>
-<text x="405" y="115" class="graphic-label">B</text>
-<text x="220" y="170" class="graphic-label">C</text>
-`);
-}
-if(q.n===70){
-return svgWrap(`
-<line x1="585" y1="30" x2="585" y2="230" stroke="#64748b" stroke-width="5"/>
-${[0,1,2].map(i=>`<line x1="${100+i*85}" y1="${55+i*22}" x2="${240+i*85}" y2="${135+i*22}" stroke="#0f172a" stroke-width="4"/>`).join('')}
-${[0,1,2].map(i=>`<line x1="${360+i*62}" y1="${195-i*18}" x2="${485+i*38}" y2="${120-i*26}" stroke="#0284c7" stroke-width="4"/>`).join('')}
-<text x="500" y="250" class="graphic-small">reflecting boundary</text>
-`);
-}
-return `<div style="padding:24px;color:#475569">Diagram placeholder</div>`;
-}
+
 const BANK = [
 {n:1,l:1,t:"Cloze",q:"A wave in which the oscillations are perpendicular to the direction of energy transfer is a ______ wave.",a:"transverse",obj:"Categorise and define transverse and longitudinal waves."},
 {n:2,l:1,t:"Cloze",q:"In a longitudinal wave, the oscillations are ______ to the direction of energy transfer.",a:"parallel",obj:"Categorise and define transverse and longitudinal waves."},
 {n:3,l:1,t:"Short answer",q:"State what is meant by a transverse wave.",a:"A wave in which the oscillations or vibrations are perpendicular to the direction of energy transfer.",acc:"Also accept: perpendicular to the direction of travel.",obj:"Categorise and define transverse and longitudinal waves."},
 {n:4,l:1,t:"Short answer",q:"State what is meant by a longitudinal wave.",a:"A wave in which the oscillations or vibrations are parallel to the direction of energy transfer.",acc:"Also accept: parallel to the direction of travel.",obj:"Categorise and define transverse and longitudinal waves."},
-{n:5,l:1,t:"MCQ",q:"Which is a transverse wave?",opts:["A. Sound in air","B. Light","C. Ultrasound in tissue","D. A compression wave in a spring"],a:"B. Light.",obj:"Give examples of transverse and longitudinal waves."},
-{n:6,l:1,t:"MCQ",q:"Which is a longitudinal wave?",opts:["A. Light","B. Radio waves","C. Sound in air","D. Water surface waves"],a:"C. Sound in air.",obj:"Give examples of transverse and longitudinal waves."},
+{n:5,l:1,t:"Sort",q:"Sort these five waves into transverse and longitudinal waves: light, sound in air, seismic P wave, water surface ripple, radio wave.",a:"Transverse: light, water surface ripple, radio wave. Longitudinal: sound in air, seismic P wave.",obj:"Give examples of transverse and longitudinal waves."},
+{n:6,l:1,t:"Sort",q:"Sort these five waves into transverse and longitudinal waves: ultrasound, gamma rays, seismic S wave, compression wave in a spring, wave on a vibrating guitar string.",a:"Transverse: gamma rays, seismic S wave, wave on a vibrating guitar string. Longitudinal: ultrasound, compression wave in a spring.",obj:"Give examples of transverse and longitudinal waves."},
 {n:7,l:1,t:"Short answer",q:"Give one example of a transverse wave and one example of a longitudinal wave.",a:"Example transverse: light, any electromagnetic wave, or a water surface wave. Example longitudinal: sound or a compression wave in a spring.",obj:"Give examples of transverse and longitudinal waves."},
-{n:8,l:1,t:"Cloze",q:"Regions in a longitudinal wave where particles are closer together are called ______.",a:"compressions",obj:"Identify compressions and rarefactions."},
-{n:9,l:1,t:"Cloze",q:"Regions in a longitudinal wave where particles are further apart are called ______.",a:"rarefactions",obj:"Identify compressions and rarefactions."},
+{n:8,l:1,t:"Graphical",g:"Unlabelled longitudinal particle diagram.",q:"On the diagram, identify one compression.",a:"A compression is any region where the particles are closest together.",obj:"Identify compressions and rarefactions."},
+{n:9,l:1,t:"Graphical",g:"The same unlabelled longitudinal particle diagram used in Q8.",q:"On the diagram, identify one rarefaction.",a:"A rarefaction is any region where the particles are most spread out.",obj:"Identify compressions and rarefactions."},
 {n:10,l:1,t:"Short answer",q:"Which type of wave contains compressions and rarefactions?",a:"A longitudinal wave.",obj:"Identify compressions and rarefactions."},
-{n:11,l:1,t:"Graphical",g:"Particle diagram of a longitudinal wave with several labelled regions.",q:"Which labelled region is a compression?",a:"A and C are compressions because the particles are closest together there.",obj:"Identify compressions and rarefactions."},
-{n:12,l:1,t:"Graphical",g:"One transverse-wave diagram and one longitudinal particle diagram.",q:"Which diagram shows a longitudinal wave?",a:"B. It shows compressions and rarefactions, so the oscillations are parallel to the direction of travel.",obj:"Categorise wave types from diagrams."},
+{n:11,l:1,t:"Graphical",g:"Clear longitudinal particle diagram with regions A, B and C labelled.",q:"Which labelled region is a compression?",a:"B. The particles are closest together in region B.",obj:"Identify compressions and rarefactions."},
+{n:12,l:1,t:"Graphical",g:"Three particle-motion diagrams labelled A, B and C.",q:"Which diagram best represents the actual displacement of a particle in a longitudinal wave?",a:"B. The particle oscillates backwards and forwards parallel to the direction the wave travels.",obj:"Recognise particle motion in a longitudinal wave."},
+
 {n:13,l:2,t:"Short answer",q:"What is the amplitude of a wave?",a:"The maximum displacement from the equilibrium or rest position.",obj:"Understand amplitude."},
 {n:14,l:2,t:"Short answer",q:"What is wavelength?",a:"The distance between two corresponding points on adjacent waves.",acc:"For example, crest to crest or trough to trough.",obj:"Understand wavelength."},
 {n:15,l:2,t:"Short answer",q:"What is frequency?",a:"The number of complete waves or oscillations passing a point each second.",obj:"Understand frequency."},
 {n:16,l:2,t:"Short answer",q:"What is the time period of a wave?",a:"The time taken for one complete wave or oscillation.",obj:"Understand time period."},
 {n:17,l:2,t:"Cloze",q:"The unit of frequency is the ______.",a:"hertz (Hz)",obj:"Know the unit of frequency."},
-{n:18,l:2,t:"Graphical",g:"Transverse wave with several vertical arrows labelled A, B and C.",q:"Which arrow represents the amplitude?",a:"A. Amplitude is measured from the equilibrium line to a crest or trough.",obj:"Identify amplitude on a wave diagram."},
-{n:19,l:2,t:"Graphical",g:"Transverse wave with several horizontal distances labelled A to D.",q:"Which labelled distance represents one wavelength?",a:"A. It spans one complete cycle, from one corresponding point to the next.",obj:"Identify wavelength on a wave diagram."},
+{n:18,l:2,t:"Graphical",g:"Transverse wave with amplitude arrows A and B, crest-to-trough arrow C, and a wavelength arrow.",q:"Which labelled arrows represent the amplitude?",a:"A and B. Amplitude is measured from the equilibrium line to a crest or from the equilibrium line to a trough.",obj:"Identify amplitude on a wave diagram."},
+{n:19,l:2,t:"Graphical",g:"Transverse wave with horizontal distances A, B and C labelled.",q:"Which labelled distances represent one wavelength?",a:"A and C. Each spans one complete cycle between corresponding points on the wave.",obj:"Identify wavelength on a wave diagram."},
 {n:20,l:2,t:"Graphical",g:"Transverse wave with one marked horizontal distance.",q:"What quantity is shown by the marked horizontal distance?",a:"Wavelength (λ).",obj:"Identify wavelength on a wave diagram."},
 {n:21,l:2,t:"Recall",q:"Write the equation linking time period T and frequency f.",a:"T = 1/f",acc:"Also accept f = 1/T.",obj:"Recall and apply T = 1/f."},
 {n:22,l:2,t:"Calculation",q:"A wave has a frequency of 5 Hz. Calculate its period.",a:"T = 1/5 = 0.20 s.",obj:"Apply T = 1/f."},
@@ -337,6 +275,7 @@ const BANK = [
 {n:24,l:2,t:"Calculation",q:"A wave has a period of 0.50 s. Calculate its frequency.",a:"f = 1/0.50 = 2 Hz.",obj:"Apply T = 1/f."},
 {n:25,l:2,t:"Calculation",q:"A wave has a period of 0.20 s. Calculate its frequency.",a:"f = 1/0.20 = 5 Hz.",obj:"Apply T = 1/f."},
 {n:26,l:2,t:"MCQ",q:"A wave travels at constant speed. Its frequency increases. What happens to its wavelength?",opts:["A. It increases","B. It decreases","C. It remains unchanged","D. It becomes zero"],a:"B. It decreases.",obj:"Relate frequency, wavelength and wave speed."},
+
 {n:27,l:3,t:"Recall",q:"Write the equation used to calculate speed from distance and time.",a:"speed = distance ÷ time",obj:"Calculate wave speed from distance and time."},
 {n:28,l:3,t:"Calculation",q:"A wave travels 12 m in 3 s. Calculate its speed.",a:"4 m/s.",obj:"Calculate wave speed from distance and time."},
 {n:29,l:3,t:"Calculation",q:"A wave travels 30 m in 5 s. Calculate its speed.",a:"6 m/s.",obj:"Calculate wave speed from distance and time."},
@@ -353,6 +292,7 @@ const BANK = [
 {n:40,l:3,t:"MCQ",q:"Which combination gives a wave speed of 6 m/s?",opts:["A. 2 Hz and 3 m","B. 2 Hz and 4 m","C. 3 Hz and 3 m","D. 6 Hz and 6 m"],a:"A. 2 Hz and 3 m.",obj:"Apply v = fλ."},
 {n:41,l:3,t:"Calculation",q:"A wave travels 15 m in 0.75 s. Calculate its speed.",a:"20 m/s.",obj:"Calculate wave speed from distance and time."},
 {n:42,l:3,t:"Short answer",q:"A wave travels at constant speed. Its frequency doubles. What happens to its wavelength?",a:"It halves.",obj:"Relate frequency and wavelength at constant wave speed."},
+
 {n:43,l:4,t:"Practical",q:"Describe how you could measure the speed of sound in air using a known distance.",a:"Measure a known distance, measure the travel time of the sound, then calculate speed = distance ÷ time.",obj:"Describe a method to measure speed of sound in air."},
 {n:44,l:4,t:"Practical",q:"Describe how an echo could be used to measure the speed of sound.",a:"Measure the distance to a reflecting surface, measure the time for the echo to return, then use twice the distance divided by the time.",obj:"Describe a method to measure speed of sound in air."},
 {n:45,l:4,t:"Practical",q:"Why is timing several echoes better than timing one echo?",a:"It reduces percentage uncertainty and reduces the effect of reaction time.",obj:"Improve a method for measuring speed of sound."},
@@ -361,18 +301,20 @@ const BANK = [
 {n:48,l:4,t:"Graphical calculation",g:"Ripple tank wavefronts over a ruler with frequency = 6 Hz.",q:"Use the diagram to calculate the wave speed.",a:"The wavefront spacing is 4 cm = 0.04 m. v = fλ = 6 × 0.04 = 0.24 m/s.",obj:"Calculate ripple speed from measured wavelength and frequency."},
 {n:49,l:4,t:"Short answer",q:"Why is measuring several wavelengths more reliable than measuring one wavelength?",a:"It reduces percentage uncertainty.",obj:"Improve precision in wavelength measurement."},
 {n:50,l:4,t:"Short answer",q:"Which quantity must be known, as well as wavelength, to calculate wave speed in a ripple tank?",a:"Frequency.",obj:"Recall quantities needed for v = fλ."},
+
 {n:51,l:5,t:"Short answer",q:"What is refraction?",a:"A change in direction of a wave caused by a change in speed when it crosses a boundary.",obj:"Explain refraction in terms of wave speed."},
 {n:52,l:5,t:"Cloze",q:"Refraction occurs because a wave changes ______ when it enters a different medium.",a:"speed",obj:"Explain refraction in terms of wave speed."},
 {n:53,l:5,t:"Short answer",q:"When a wave crosses a boundary, which quantity remains unchanged: frequency, speed or wavelength?",a:"Frequency.",obj:"Relate speed, frequency and wavelength across a boundary."},
 {n:54,l:5,t:"Short answer",q:"A wave enters a medium where it travels more slowly. What happens to its frequency and wavelength?",a:"The frequency stays the same and the wavelength decreases.",obj:"Relate speed, frequency and wavelength across a boundary."},
 {n:55,l:5,t:"Short answer",q:"A wave enters a medium where it travels faster. What happens to its frequency and wavelength?",a:"The frequency stays the same and the wavelength increases.",obj:"Relate speed, frequency and wavelength across a boundary."},
 {n:56,l:5,t:"MCQ",q:"A wave slows down but its frequency remains unchanged. What happens to its wavelength?",opts:["A. Increases","B. Decreases","C. Stays the same","D. Doubles"],a:"B. Decreases.",obj:"Relate speed, frequency and wavelength across a boundary."},
-{n:57,l:5,t:"Graphical",g:"Incident ray crossing a boundary into a slower medium, with four possible refracted rays.",q:"Which ray is correct?",a:"A. In the slower medium the ray bends towards the normal.",obj:"Construct and interpret ray diagrams for refraction."},
-{n:58,l:5,t:"Graphical",g:"Ray entering a faster medium with four possible refracted paths.",q:"Which path represents the refracted wave?",a:"B. In the faster medium the ray bends away from the normal.",obj:"Construct and interpret ray diagrams for refraction."},
+{n:57,l:5,t:"Graphical",g:"Incident ray entering a slower medium with three possible paths: towards the normal, straight on, or away from the normal.",q:"Which ray is correct? (Tip: TAGAGA)",a:"A. The wave slows down, so the ray bends towards the normal.",obj:"Construct and interpret ray diagrams for refraction."},
+{n:58,l:5,t:"Graphical",g:"Incident ray entering a faster medium with three possible paths: towards the normal, straight on, or away from the normal.",q:"Which path represents the refracted wave? (Tip: TAGAGA)",a:"C. The wave speeds up, so the ray bends away from the normal.",obj:"Construct and interpret ray diagrams for refraction."},
 {n:59,l:5,t:"Short answer",q:"A wave enters a new medium along the normal. Its speed changes. Does its direction change?",a:"No.",obj:"Interpret refraction at normal incidence."},
 {n:60,l:5,t:"Graphical explanation",g:"Wavefront approaches a boundary at an angle, with one side entering the slower medium first.",q:"Explain why the wavefront changes direction.",a:"One side slows first while the other side is still moving faster, causing the wavefront to turn.",obj:"Use wavefront diagrams to explain refraction."},
-{n:61,l:5,t:"Graphical",g:"Wavefronts become closer together after crossing a boundary.",q:"What does this tell you about the wave speed?",a:"The wave speed has decreased.",obj:"Use wavefront spacing to interpret speed changes."},
-{n:62,l:5,t:"Graphical",g:"Wavefronts become further apart after crossing a boundary.",q:"What has happened to the wave speed?",a:"The wave speed has increased.",obj:"Use wavefront spacing to interpret speed changes."},
+{n:61,l:5,t:"Graphical",g:"Wavefronts become closer together after crossing a boundary.",q:"What does this tell you about the wave speed? Explain your answer.",a:"The wave speed has decreased. The wavefronts are closer together, so the wavelength is smaller. The frequency does not change at the boundary, so v = fλ means the speed is lower.",obj:"Use wavefront spacing to interpret speed changes."},
+{n:62,l:5,t:"Graphical",g:"Wavefronts become further apart after crossing a boundary.",q:"What has happened to the wave speed? Explain your answer.",a:"The wave speed has increased. The wavefronts are further apart, so the wavelength is larger. The frequency does not change at the boundary, so v = fλ means the speed is higher.",obj:"Use wavefront spacing to interpret speed changes."},
+
 {n:63,l:6,t:"Cloze",q:"At a boundary, a wave may be reflected, ______ or transmitted.",a:"absorbed",obj:"Know reflection, absorption and transmission at a boundary."},
 {n:64,l:6,t:"Cloze",q:"A wave that passes through a boundary into another material has been ______.",a:"transmitted",obj:"Know reflection, absorption and transmission at a boundary."},
 {n:65,l:6,t:"Cloze",q:"A wave that returns from a boundary has been ______.",a:"reflected",obj:"Know reflection, absorption and transmission at a boundary."},
@@ -380,9 +322,10 @@ const BANK = [
 {n:67,l:6,t:"Short answer",q:"Angles of incidence and reflection are measured from which line?",a:"The normal.",obj:"Construct and interpret reflection diagrams."},
 {n:68,l:6,t:"Graphical calculation",g:"Incident ray, normal and reflected ray. Angle of incidence = 35°.",q:"What is the angle of reflection?",a:"35°.",obj:"Construct and interpret reflection diagrams."},
 {n:69,l:6,t:"Graphical",g:"Reflection diagram with angles A, B and C labelled.",q:"Which labelled angle is the angle of incidence?",a:"A. The angle of incidence is between the incident ray and the normal.",obj:"Construct and interpret reflection diagrams."},
-{n:70,l:6,t:"Graphical",g:"Incident and reflected wavefronts at a flat boundary.",q:"Which set of wavefronts represents the reflected wave?",a:"The set leaving the boundary at the same angle to the normal as the incident wave.",obj:"Construct and interpret wave diagrams for reflection."},
+{n:70,l:6,t:"Graphical",g:"Three possible reflection diagrams labelled A, B and C.",q:"Which diagram correctly shows the reflected wave direction?",a:"B. The reflected wave leaves at the same angle to the normal as the incident wave.",obj:"Construct and interpret wave diagrams for reflection."},
 {n:71,l:6,t:"Short answer",q:"Give two things that can happen to wave energy when a wave reaches a boundary.",a:"Any two of: reflected, transmitted, absorbed.",obj:"Describe reflection, transmission and absorption at interfaces."},
 {n:72,l:6,t:"Short answer",q:"What does it mean when wave energy is absorbed by a material?",a:"Energy is transferred to the material, usually increasing its internal or thermal energy.",obj:"Describe absorption of waves at interfaces."},
+
 {n:73,l:7,t:"Short answer",q:"Which part of the ear vibrates when sound waves reach it?",a:"The eardrum.",obj:"Describe conversion between sound waves and vibrations in solids."},
 {n:74,l:7,t:"Short answer",q:"Describe what happens when sound waves reach the eardrum.",a:"Pressure variations in the air cause the solid eardrum to vibrate.",obj:"Describe conversion between sound waves and vibrations in solids."},
 {n:75,l:7,t:"Short answer",q:"A loudspeaker converts vibrations of its cone into what type of wave?",a:"Sound waves.",obj:"Describe conversion between vibrations and sound waves."},
@@ -390,8 +333,9 @@ const BANK = [
 {n:77,l:7,t:"Cloze",q:"The normal human hearing range is approximately ______ Hz to ______ kHz.",a:"20 Hz to 20 kHz.",obj:"Know the normal human hearing range."},
 {n:78,l:7,t:"MCQ",q:"Which frequency would normally be audible to a young person with healthy hearing?",opts:["A. 5 Hz","B. 500 Hz","C. 50 kHz","D. 100 kHz"],a:"B. 500 Hz.",obj:"Know the normal human hearing range."},
 {n:79,l:7,t:"Short answer",q:"Why does the human ear not respond equally well to every possible frequency?",a:"The structures of the ear only respond effectively over a limited range of vibration frequencies.",obj:"Explain why sound/vibration conversion works over a limited frequency range."},
-{n:80,l:7,t:"Short answer",q:"A sound has a frequency of 25 kHz. Explain why a human would normally not hear it.",a:"25 kHz is above the upper limit of normal human hearing, about 20 kHz.",obj:"Relate frequency range to human hearing."}
+{n:80,l:7,t:"Short answer",q:"A sound has a frequency of 25 kHz. Explain why a human would normally not hear it.",a:"It is ultrasound. Its frequency, 25 kHz, is above the upper limit of normal human hearing, about 20 kHz.",obj:"Relate frequency range to human hearing."}
 ];
+
 const blueprint=[1,1,1,2,2,2,3,3,3,3,4,4,5,5,5,6,6,7,7,7];
 function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 function hashSeed(s){let h=2166136261>>>0;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
