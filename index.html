@@ -10,7 +10,7 @@
 header{background:var(--navy);color:#fff;padding:28px 20px}.wrap{max-width:1100px;margin:auto}h1{margin:0;font-size:clamp(1.9rem,4vw,2.7rem)}.subtitle{margin-top:7px;opacity:.9}
 main{max-width:1100px;margin:auto;padding:28px 20px 50px}#search{width:100%;max-width:520px;padding:12px 14px;border:1px solid var(--border);border-radius:9px;font-size:1rem;margin-bottom:28px}
 .subject{margin-bottom:40px}.subject>h2{font-size:1.8rem;margin:0 0 20px;border-bottom:3px solid var(--navy);padding-bottom:7px}.stage{margin:24px 0 32px}.stage>h3{font-size:1.35rem;margin:0 0 15px}.topic{margin:18px 0 26px}.topic>h4{margin:0 0 11px;color:var(--muted);font-size:1.02rem}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px}.card{display:block;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:16px;text-decoration:none;color:inherit;box-shadow:0 2px 5px #0000000d;transition:.15s}.card:hover{transform:translateY(-2px);box-shadow:0 5px 13px #00000018}.title{font-weight:700;font-size:1.05rem}.file{font-size:.76rem;color:var(--muted);margin-top:7px;word-break:break-all}.status{background:#fff;border:1px solid var(--border);border-radius:9px;padding:16px;color:var(--muted)}.hidden{display:none!important}footer{text-align:center;color:var(--muted);font-size:.85rem;padding:25px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px}.card{display:block;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:16px;text-decoration:none;color:inherit;box-shadow:0 2px 5px #0000000d;transition:.15s}.card:hover{transform:translateY(-2px);box-shadow:0 5px 13px #00000018}.title{font-weight:700;font-size:1.05rem}.version-tag{font-size:.7rem;color:var(--muted);font-weight:600;margin-left:5px}.file{font-size:.76rem;color:var(--muted);margin-top:7px;word-break:break-all}.status{background:#fff;border:1px solid var(--border);border-radius:9px;padding:16px;color:var(--muted)}.hidden{display:none!important}footer{text-align:center;color:var(--muted);font-size:.85rem;padding:25px}
 </style>
 </head>
 <body>
@@ -42,21 +42,32 @@ function nice(s){return s.replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim().toLow
 function parse(path){
  const filename=path.split('/').pop();
  if(!filename.toLowerCase().endsWith('.html')||filename.toLowerCase()==='index.html')return null;
- const stem=filename.replace(/\.html$/i,'');
- const p=stem.split('_');
+ const stem=filename.replace(/\\.html$/i,'');
+ const vm=stem.match(/_v(\\d+(?:_\\d+)*)$/i);
+ const cleanStem=vm?stem.slice(0,vm.index):stem;
+ const version=vm?vm[1]:'';
+ const appKey=(path.slice(0,path.lastIndexOf('/')+1)+cleanStem).toLowerCase();
+ const p=cleanStem.split('_');
  if(p.length>=3&&/^KS[345]$/i.test(p[0])&&/^(PHYSICS|MATHS)$/i.test(p[1])){
    const stage=p[0].toUpperCase();
    const subject=p[1].toUpperCase()==='PHYSICS'?'Physics':'Maths';
    let topic='Resources',titleParts=p.slice(2);
    if(p.length>=4&&p[2]===p[2].toUpperCase()&&/[A-Z]/.test(p[2])){topic=nice(p[2]);titleParts=p.slice(3)}
-   return{path,filename,stage,subject,topic,title:nice(titleParts.join('_'))};
+   return{path,filename,stage,subject,topic,title:nice(titleParts.join('_')),version,appKey};
  }
- const short=stem.match(/^(KS[345])([PM])_([^_]+)_(.+)$/i);
- if(short){return{path,filename,stage:short[1].toUpperCase(),subject:short[2].toUpperCase()==='P'?'Physics':'Maths',topic:nice(short[3]),title:nice(short[4])}}
- return{path,filename,stage:'Other',subject:'Other',topic:'Uncategorised',title:nice(stem)};
+ const short=cleanStem.match(/^(KS[345])([PM])_([^_]+)_(.+)$/i);
+ if(short){return{path,filename,stage:short[1].toUpperCase(),subject:short[2].toUpperCase()==='P'?'Physics':'Maths',topic:nice(short[3]),title:nice(short[4]),version,appKey}}
+ return{path,filename,stage:'Other',subject:'Other',topic:'Uncategorised',title:nice(cleanStem),version,appKey};
+}
+function latestOnly(apps){
+ const rank=v=>v?v.split('_').map(Number):[0];
+ const newer=(a,b)=>{const x=rank(a.version),y=rank(b.version);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d>0}return !!a.version&&!b.version};
+ const chosen=new Map();
+ for(const app of apps){const prev=chosen.get(app.appKey);if(!prev||newer(app,prev))chosen.set(app.appKey,app)}
+ return [...chosen.values()];
 }
 function sortIndex(value,list){const i=list.indexOf(value);return i<0?999:i}
-function card(app){const a=document.createElement('a');a.className='card';a.href='./'+app.path;a.dataset.search=[app.title,app.topic,app.subject,app.stage,app.filename].join(' ').toLowerCase();a.innerHTML=`<div class="title">${app.title}</div><div class="file">${app.filename}</div>`;return a}
+function card(app){const a=document.createElement('a');a.className='card';a.href='./'+app.path;a.dataset.search=[app.title,app.topic,app.subject,app.stage,app.filename].join(' ').toLowerCase();a.innerHTML=`<div class="title">${app.title}${app.version?` <span class="version-tag">v${app.version.replaceAll('_','.')}</span>`:''}</div><div class="file">${app.filename}</div>`;return a}
 function render(list){
  const root=document.getElementById('apps'),status=document.getElementById('status');root.innerHTML='';
  if(!list.length){status.textContent='No HTML apps found.';return}status.classList.add('hidden');
@@ -73,7 +84,7 @@ function render(list){
  });
 }
 function searchSetup(){document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('.card').forEach(c=>c.classList.toggle('hidden',q&&!c.dataset.search.includes(q)));document.querySelectorAll('.topic').forEach(x=>x.classList.toggle('hidden',!x.querySelector('.card:not(.hidden)')));document.querySelectorAll('.stage').forEach(x=>x.classList.toggle('hidden',!x.querySelector('.topic:not(.hidden)')));document.querySelectorAll('.subject').forEach(x=>x.classList.toggle('hidden',!x.querySelector('.stage:not(.hidden)')))} )}
-async function load(){try{const r=await fetch(api);if(!r.ok)throw new Error(r.status);const d=await r.json();const apps=d.tree.filter(x=>x.type==='blob'&&x.path.toLowerCase().endsWith('.html')).map(x=>parse(x.path)).filter(Boolean);render(apps);searchSetup()}catch(e){console.error(e);document.getElementById('status').innerHTML='<strong>Unable to load apps from GitHub.</strong><br>Please refresh the page or check the repository settings.'}}
+async function load(){try{const r=await fetch(api);if(!r.ok)throw new Error(r.status);const d=await r.json();const apps=d.tree.filter(x=>x.type==='blob'&&x.path.toLowerCase().endsWith('.html')).map(x=>parse(x.path)).filter(Boolean);render(latestOnly(apps));searchSetup()}catch(e){console.error(e);document.getElementById('status').innerHTML='<strong>Unable to load apps from GitHub.</strong><br>Please refresh the page or check the repository settings.'}}
 load();
 </script>
 </body>
