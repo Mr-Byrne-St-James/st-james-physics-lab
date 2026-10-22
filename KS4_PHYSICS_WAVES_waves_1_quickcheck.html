@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Waves 1 quickCheck — St James Physics Lab (v1.1)</title>
+<title>Waves 1 quickCheck — St James Physics Lab (v1.2)</title>
 <style>
 :root{
   --bg:#0f172a;--panel:#111827;--panel2:#1f2937;--ink:#f8fafc;--muted:#cbd5e1;
@@ -78,6 +78,25 @@ input[type=text]{background:#0f172a;color:white;border:1px solid #475569;border-
 .card{padding:17px}
 #start h2{font-size:1.5rem}
 @media(max-width:700px){.wrap{padding:9px}.brand{gap:7px}.brand-home{flex-basis:165px;max-width:46%}.brand-logo{max-height:45px;padding:2px 4px}.quickcheck-mark{max-width:120px;height:40px;padding:3px}.topright{margin-left:0}.topright button{font-size:.75rem;padding:7px 9px}.card{padding:14px}}
+
+/* v1.2: smaller, balanced brand banner; clickable school home logo */
+.wrap{max-width:980px;padding:9px 14px}
+.brand{gap:10px;margin-bottom:9px;align-items:center}
+.brand-home{flex:0 0 206px;max-width:206px}
+.brand-logo{max-height:48px;border-radius:7px;padding:2px 5px}
+.quickcheck-mark{height:42px;max-width:146px;padding:2px 4px;border-radius:7px}
+.quickcheck-mark svg{max-height:38px}
+.brand-home:hover .brand-logo{box-shadow:0 0 0 2px #38bdf8}
+.topright{margin-left:auto}
+@media(max-width:700px){
+ .wrap{padding:8px}
+ .brand{gap:6px;margin-bottom:9px}
+ .brand-home{flex:0 1 157px;max-width:44%}
+ .brand-logo{max-height:39px;padding:1px 3px}
+ .quickcheck-mark{height:33px;max-width:112px;padding:1px 2px}
+ .quickcheck-mark svg{max-height:30px}
+ .topright button{font-size:.72rem;padding:6px 8px}
+}
 </style>
 </head>
 <body>
