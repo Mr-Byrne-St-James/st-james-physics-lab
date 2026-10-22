@@ -97,6 +97,7 @@ input[type=text]{background:#0f172a;color:white;border:1px solid #475569;border-
  .quickcheck-mark svg{max-height:30px}
  .topright button{font-size:.72rem;padding:6px 8px}
 }
+@media print {body{background:#fff;color:#111}.wrap{max-width:none}.brand,.teacher-toolbar,.row button,.footer-actions,button{display:none!important}.card{background:#fff;color:#111;border:0;box-shadow:none}.muted{color:#555}.review-item,.bank-item{background:#fff;color:#111;border-color:#aaa;break-inside:avoid}.bank-item .meta{color:#333}.lesson-title{color:#111}#teacher details{break-inside:avoid}}
 </style>
 </head>
 <body>
@@ -176,7 +177,7 @@ input[type=text]{background:#0f172a;color:white;border:1px solid #475569;border-
     <div id="reviewSummary" class="review-list"></div>
     <div class="row" style="margin-top:18px">
       <button id="reviewFlaggedBtn" class="secondary">Review my flagged questions</button>
-      <button id="restartBtn" class="primary">New quickCheck</button>
+      <button id="restartBtn" class="primary">New quickCheck</button><button id="printResults" class="ghost">Print / Save PDF</button>
     </div>
   </section>
 
@@ -185,7 +186,7 @@ input[type=text]{background:#0f172a;color:white;border:1px solid #475569;border-
     <p class="muted">All 80 questions are shown below, grouped by lesson.</p>
     <div class="teacher-toolbar">
       <input id="teacherSearch" type="text" placeholder="Search question bank…">
-      <button id="teacherBack" class="secondary">Back to quickCheck</button>
+      <button id="teacherBack" class="secondary">Back to quickCheck</button><button id="printBank" class="ghost">Print bank / Save PDF</button>
     </div>
     <div id="teacherList"></div>
   </section>
@@ -434,6 +435,8 @@ $("teacherBtn").onclick=()=>{renderTeacher();show("teacher")};
 $("teacherBack").onclick=()=>show("start");
 $("teacherSearch").oninput=e=>renderTeacher(e.target.value);
 
+$("printResults").onclick=()=>window.print();
+$("printBank").onclick=()=>{document.querySelectorAll("#teacher details").forEach(d=>d.open=true);window.print();};
 renderSeed();
 </script>
 </body>
