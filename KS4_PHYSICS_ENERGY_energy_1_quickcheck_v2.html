@@ -208,7 +208,16 @@ function wavePath(x0=40,y0=120,width=600,amp=55,cycles=3){
   }
   return d;
 }
-function getGraphic(q){
+function getGraphic(q){if(q.cat==="MINCEKEG")return `<svg viewBox="0 0 580 145" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mnemonic illustration" style="max-height:145px">
+<g transform="translate(66 12)" stroke="#253247" stroke-width="3.4" stroke-linejoin="round">
+<path d="M30 30h66l-8 26H39z" fill="#bcc8d1"/><path d="M44 56h43v28H44z" fill="#8da3b0"/><path d="M64 62h68v25H64z" fill="#aebfc9"/><ellipse cx="133" cy="74" rx="12" ry="16" fill="#e3e6ea"/>
+<path d="M145 74c27-12 28 13 47 4m-47 6c29-7 26 18 47 10m-47-17c26-5 31 21 51 20" stroke="#c04f48" fill="none" stroke-width="7" stroke-linecap="round"/>
+<path d="M70 84v28H43l-7 9h88" fill="none"/><path d="M70 84V96h-16" fill="none"/><path d="M89 51l12-13 17 10" fill="none"/><circle cx="118" cy="48" r="7" fill="#8da3b0"/></g>
+<g transform="translate(350 12)" stroke="#614126" stroke-width="3">
+<ellipse cx="56" cy="25" rx="46" ry="14" fill="#a87542"/><path d="M10 25Q0 72 15 120Q56 139 97 120Q113 72 102 25" fill="#b9844b"/>
+<path d="M31 31Q20 76 35 123M56 32v94M80 31Q93 76 78 122" fill="none" stroke="#8a5a32"/>
+<path d="M8 47Q56 63 104 47M12 98Q56 114 100 98" fill="none" stroke="#374151" stroke-width="12"/><ellipse cx="56" cy="25" rx="46" ry="14" fill="#d8a36a"/><ellipse cx="56" cy="25" rx="12" ry="5" fill="#83542f"/></g>
+</svg>`;if(q.cat==="Mr HE")return `<svg viewBox="0 0 360 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gentleman mascot" style="max-height:165px"><circle cx="180" cy="82" r="77" fill="#dce7f0" stroke="#193553" stroke-width="6"/><path d="M102 150q78-67 156 0" fill="#1b2d43"/><path d="M163 126h34l-17 31z" fill="#c14542"/><ellipse cx="180" cy="93" rx="42" ry="48" fill="#f1c79d" stroke="#1b2d43" stroke-width="3"/><rect x="120" y="52" width="120" height="15" rx="8" fill="#162233"/><path d="M146 50V10h68v40" fill="#162233"/><circle cx="204" cy="87" r="13" fill="none" stroke="#b89943" stroke-width="4"/><path d="M216 95q25 16 8 39" fill="none" stroke="#b89943" stroke-width="3"/><path d="M180 111q-34-24-45 2q17 26 45 0q28 26 45 0q-11-26-45-2" fill="#17212f"/></svg>`;
   const common=`stroke="#0f172a" stroke-width="3" fill="none"`;
   const arrowDefs=`<defs><marker id="arr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f172a"/></marker><marker id="bluearr" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0284c7"/></marker></defs>`;
   function longParticles(){
@@ -345,7 +354,7 @@ function randomize(q){
 }
 function generateSet(){
  rng=mulberry32(hashSeed(seed));selected=[];const used=new Set();
- const choose=pool=>{const xs=pool.filter(q=>!used.has(q.n));if(!xs.length)throw Error("No unused question");const q=xs[Math.floor(rng()*xs.length)];used.add(q.n);selected.push(randomize(q));};
+ const choose=pool=>{const xs=pool.filter(q=>!used.has(q.n));if(!xs.length)throw Error("No unused question");const q=xs[Math.floor(rng()*xs.length)];used.add(q.n);const item=randomize(q);if(item.cat==="MINCEKEG"||item.cat==="Mr HE")item.g=true;selected.push(item);};
  const calc=l=>BANK.filter(q=>q.l===l&&q.t==="Calculation"&&q.cat!=="GPE ↔ KE");
  // Twelve calculations, including two guaranteed GPE ↔ KE questions.
  [3,3,4,4,5,5,6,6,6,3].forEach(l=>choose(calc(l)));
@@ -439,7 +448,7 @@ function renderTeacher(filter=""){
   $("teacherList").innerHTML=html;
 }
 window.previewQuestion=(n)=>{
-  const q=BANK.find(x=>x.n===n);
+  const q={...BANK.find(x=>x.n===n)};if(q.cat==="MINCEKEG"||q.cat==="Mr HE")q.g=true;
   selected=[q]; idx=0; flaggedReviewMode=true; reviewQueue=[q]; show("quiz"); renderQuestion();
 };
 $("teacherBtn").onclick=()=>{renderTeacher();show("teacher")};
