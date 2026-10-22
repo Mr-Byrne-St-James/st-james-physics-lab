@@ -27,6 +27,17 @@ Version 1.0 · 22 October 2026
 - Keep questions short, unambiguous and fully self-contained. Provide required values (e.g. g=10 N/kg) explicitly.
 - **Compact iPad presentation:** Keep formula model answers to short, tightly spaced lines with no oversized display maths, unnecessary prose or large gaps. Use `standard equation → rearranged equation (if needed) → substitution = answer + unit`, with each step on its own line, e.g. `P = E/t` / `E = Pt` / `E = 50 × 10 = 500 J`. Ensure the full answer fits comfortably on an iPad screen without horizontal scrolling.
 - **Mandatory model-answer formula layout:** For every calculation or formula question, the **first line** of the model answer must show the **full standard equation in its original form** (e.g. `P = E/t`), even when no rearrangement is needed. If rearrangement is required, put the **rearranged equation on the next line** (e.g. `E = Pt`), followed by substitution, the numerical answer and the correct unit on subsequent lines. Never begin with the rearranged formula or substituted numbers.
+- **Numerical challenge and presentation:** Use realistic, varied values (including decimals and sensible larger numbers) rather than repeatedly choosing trivially simple pairs such as 1 × 2 or 2 × 4. Answers need not be tidy whole numbers; include appropriate calculator arithmetic, unit conversions and occasional equation rearrangements without making the assessment artificially difficult.
+- **Precision:** Unless a question specifies otherwise, teach and show final numerical answers to **3 significant figures (3 s.f.)**. Keep full precision until the final step. Where rounding occurs, clearly label the final line `(3 s.f.)`; do not force a pointless extra rounding line when the answer is already exact.
+- **Alternative equivalent units:** Give the requested unit first, then, where it helps students, show a compact equivalent in kJ, MJ or another appropriate unit (e.g. `187,000 J (3 s.f.) = 187 kJ (3 s.f.)`). Alternative units supplement rather than replace the requested answer.
+- **Compact worked-answer example:**
+  ```text
+  Ek = ½mv²
+  Ek = ½ × 1250 × 17.3²
+  Ek = 187056.25 J
+  Ek = 187,000 J (3 s.f.)
+     = 187 kJ (3 s.f.)
+  ```
 - Include useful units and working in calculation model answers. Check every numerical template and unit conversion.
 - Vary question *selection* and selected *numbers*, not the underlying assessed skill. Never randomise into implausible data or accidental arithmetic traps.
 - Seeded pseudo-randomness must be deterministic: entering/reusing the same seed yields the same question IDs and numerical variants.
