@@ -435,7 +435,7 @@ function renderTeacher(filter=""){
     for(const q of qs){
       html+=`<details class="bank-item"><summary>Q${q.n} — ${q.t}</summary>
       <div class="meta">${q.obj}</div>
-      ${q.g?`<div class="graphic-placeholder">${getGraphic(q)}</div>`:""}
+      ${(q.g||q.cat==="MINCEKEG"||q.cat==="Mr HE")?`<div class="graphic-placeholder">${getGraphic(q)}</div>`:""}
       <p><strong>Question:</strong> ${q.q}</p>
       ${q.opts?`<div class="optionlist">${q.opts.map(o=>`<div class="option">${o}</div>`).join("")}</div>`:""}
       <p><strong>Model answer:</strong> ${formatModelAnswer(q)}</p>
