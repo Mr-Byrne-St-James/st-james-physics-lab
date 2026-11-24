@@ -85,13 +85,10 @@ function addQuestion(id,band,objective,tier,prompt,correct,wrong,explanation){
  for(let i=all.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[all[i],all[j]]=[all[j],all[i]]}
  BANK.push({id,band,objective,tier,prompt,options:all.map(x=>x.text),answer:all.findIndex(x=>x.key),explanation});
 }
-const HAZARD_CHOICES=[
- "The main risk is ionisation, which can damage genes.",
- "Absorbed energy can heat tissue; at high enough exposure this can cause burns.",
- "Very intense exposure can damage the retina of the eye.",
- "It can cause premature skin ageing and increase skin-cancer risk.",
- "There is no possible hazard at any intensity or dose.",
- "Every exposure causes cancer immediately."
+const HAZARD_MISCONCEPTIONS=[
+ "It is ionising radiation that causes gene mutations at every exposure, however tiny.",
+ "It can never affect human tissue at any intensity or dose.",
+ "Every part of the electromagnetic spectrum has exactly the same hazard and effect."
 ];
 function generateRegionBank(r){
  const before=ORDER[r.i-1]||"none; radio waves have the longest wavelength";
@@ -105,10 +102,13 @@ function generateRegionBank(r){
  addQuestion(id(4),r.name,"Applications and suitability","Higher Tier",`Which explanation best links ${r.name.toLowerCase()} to ${r.uses[1].toLowerCase()}?`,r.reasons[1],distinctWrong(r.reasons[1],ALL_REASONS.concat(["It has no frequency, so it cannot transfer energy.","It must travel through a liquid before it can be detected.","It is always ionising, whatever its frequency."])),r.reasons[1]);
  addQuestion(id(5),r.name,"Applications","Core",`A student is revising ${r.name.toLowerCase()}. Which use should go in their notes?`,`${r.name} — ${r.uses[0]}`,distinctWrong(`${r.name} — ${r.uses[0]}`,ALL_USES),`Remember the application: ${r.uses[0].toLowerCase()}.`);
  addQuestion(id(6),r.name,"Applications and suitability","Higher Tier",`Which statement gives a scientific reason for choosing ${r.name.toLowerCase()} for one of its applications?`,r.reasons[1],distinctWrong(r.reasons[1],ALL_REASONS.concat(["It is the only electromagnetic wave that transfers energy.","Its speed in air is always different from its speed in a vacuum.","It is automatically harmless at every dose."])),r.reasons[1]);
- addQuestion(id(7),r.name,"Hazards","Core",`Which statement best describes a possible hazard from ${r.name.toLowerCase()}?`,r.hazard,distinctWrong(r.hazard,HAZARD_CHOICES),r.hazard);
- addQuestion(id(8),r.name,"Hazards","Core",`How can ${r.name.toLowerCase()} cause harm in the situation described by its main hazard?`,r.mechanism,distinctWrong(r.mechanism,[...HAZARD_CHOICES,...ALL_REASONS]),r.mechanism);
+ addQuestion(id(7),r.name,"Hazards","Core",`Which statement best describes a possible hazard from ${r.name.toLowerCase()}?`,r.hazard,HAZARD_MISCONCEPTIONS,r.hazard);
+ addQuestion(id(8),r.name,"Hazards","Core",`How can ${r.name.toLowerCase()} cause harm in the situation described by its main hazard?`,r.mechanism,[
+  "The wave becomes sound and vibrates cells directly.","It changes every exposed cell into a cancer cell instantly.","The wave transfers matter rather than energy."
+ ],r.mechanism);
  addQuestion(id(9),r.name,"Hazards and dose","Core",`What is the best general statement about risk from ${r.name.toLowerCase()}?`,r.risk,distinctWrong(r.risk,["Risk is exactly the same for every type and every exposure.","The dose has no effect on the risk.","Any exposure always causes immediate cancer.","Only the colour of the source determines the dose."]),r.risk);
- addQuestion(id(10),r.name,"Hazards and dose","Core",`Which detail should be considered when judging the hazard from ${r.name.toLowerCase()}?`,r.risk,distinctWrong(r.risk,["The type of radiation and the size of the dose.","The name of the room where it is used.","Whether it is labelled with a bright colour.","The distance travelled by light-years."]),`AQA says the effects of UV, X-rays and gamma rays depend on radiation type and dose. For other bands, consider intensity and exposure as appropriate. ${r.risk}`);
+ const riskFactor=r.i<4?"Greater intensity or longer exposure can increase the energy transferred to tissue.":"A larger dose increases the risk of harm; AQA says effects depend on radiation type and dose.";
+ addQuestion(id(10),r.name,"Hazards and dose","Core",`Which factor could increase the risk of harm from ${r.name.toLowerCase()}?`,riskFactor,["The colour of the source, regardless of exposure.","The room where the radiation is used, regardless of dose.","A change in wavelength that makes every exposure harmless."],riskFactor);
  addQuestion(id(11),r.name,"Spectrum order and properties","Core",`Going from long to short wavelength, which region comes immediately after ${r.name.toLowerCase()}?`,after,distinctWrong(after,ORDER),`The order is radio, microwave, infrared, visible, ultraviolet, X-rays, gamma rays. ${r.name} is followed by ${after}.`);
  addQuestion(id(12),r.name,"Spectrum order and properties","Core",`Going from long to short wavelength, which region comes immediately before ${r.name.toLowerCase()}?`,before,distinctWrong(before,ORDER),`The order is radio, microwave, infrared, visible, ultraviolet, X-rays, gamma rays. ${r.name} comes after ${before}.`);
  const freq=r.i===6?"Gamma rays have the highest frequency in the listed groups.":`Compared with ${after}, ${r.name.toLowerCase()} has a lower frequency and a longer wavelength.`;
@@ -124,7 +124,6 @@ function generateRegionBank(r){
  ],"Different substances may absorb, transmit, reflect or refract electromagnetic waves differently depending on wavelength (Higher Tier). ");
  const clue=`A device uses ${r.name.toLowerCase()} to ${r.uses[0].toLowerCase()}.`;
  addQuestion(id(18),r.name,"Applications","Core",`${clue} Which wave is the device using?`,r.name,distinctWrong(r.name,ORDER),`The application named is associated with ${r.name.toLowerCase()}.`);
- const hazardChoice=HAZARD_CHOICES.find(x=>x===r.hazard)||r.hazard;
  addQuestion(id(19),r.name,"Hazards","Core",`A learner says, “All electromagnetic radiation is equally dangerous.” Which correction is best?`,`The hazard depends on the type of radiation and exposure; ${r.hazard.toLowerCase()}`,[
   "That is correct: all types have identical effects at every dose.","Only radio waves can harm tissue, and only at low intensity.","Hazard depends only on whether the wave is visible."
  ],`The hazard depends on radiation type and dose or intensity. ${r.hazard}`);
